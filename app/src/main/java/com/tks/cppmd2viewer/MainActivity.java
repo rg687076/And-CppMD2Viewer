@@ -11,11 +11,17 @@ import android.util.Log;
 import com.google.android.material.snackbar.Snackbar;
 import com.tks.cppmd2viewer.databinding.ActivityMainBinding;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -53,31 +59,42 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /* Asset配下のファイル一覧を取得 */
-        AtomicReference<List<String>> assetfilelist = new AtomicReference<List<String>>();
-        assetfilelist.set(new ArrayList<String>());
+        /* mqoファイル一覧(model-index.json)を取得 */
+        HashMap<String, ModelIndex> modelmap = new HashMap<String, ModelIndex>();
         try {
-            String[] files = MainActivity.this.getAssets().list("");
-            Arrays.stream(files).forEach(f -> {
-                if(f.equals("images")) return;
-                if(f.equals("webkit")) return;
-                List<String> filelist = assetfilelist.get();
-                filelist.addAll(getFiles(MainActivity.this.getAssets(), f));
-                assetfilelist.set(filelist);
-            });
+            /* indexファイル読込み */
+            InputStream fileInputStream = getAssets().open("model-index.json");
+            byte[] readBytes = new byte[fileInputStream.available()];
+            fileInputStream.read(readBytes);
+            String readString = new String(readBytes);
+            fileInputStream.close();
+            Log.i("index-content:", readString);
+            /* jsonパース */
+            JSONObject jsonObject = new JSONObject(readString);
+            JSONArray jsonarray = jsonObject.getJSONArray("md2models");
+            for(int lpct = 0; lpct < jsonarray.length(); lpct++) {
+                JSONObject md2model = jsonarray.getJSONObject(lpct);
+                ModelIndex mi = new ModelIndex() {{ modelname=md2model.getString("name");
+                                                    vertexfilename=md2model.getString("vertex");
+                                                    texfilename=md2model.getString("tex");}};
+                modelmap.put(md2model.getString("name"), mi);
+            }
         }
-        catch (IOException e) {
+        catch(IOException | JSONException e) {
+            e.printStackTrace();
             Snackbar.make(binding.getRoot(), "初期化に失敗しました!!", Snackbar.LENGTH_SHORT).show();
             new Handler().postDelayed(() -> MainActivity.this.finish(), 10000);
         }
 
-        Log.d("aaaaa", "file数=" + assetfilelist.get().size());
-        for(String filename : assetfilelist.get().toArray(new String[0])) {
-            Log.d("aaaaa", "filename="+ filename);
-        }
+        Log.d("aaaaa", "model数=" + modelmap.size());
+        for (Map.Entry<String, ModelIndex> item : modelmap.entrySet())
+            System.out.println(item.getKey() + " => " + item.getValue().vertexfilename + " : " + item.getValue().texfilename);
 
         /* cpp側 初期化 */
-        Jni.onCreate(getResources().getAssets(), assetfilelist.get().toArray(new String[0]));
+        String[] modelnames = modelmap.keySet().toArray(new String[0]);
+        String[] vertexnames= modelmap.values().stream().map(mi -> { return mi.vertexfilename;}).toArray(String[]::new);
+        String[] texnames   = modelmap.values().stream().map(mi -> { return mi.texfilename;}).toArray(String[]::new);
+        Jni.onCreate(getResources().getAssets(), modelnames, vertexnames, texnames);
     }
 
     @Override
@@ -103,4 +120,10 @@ public class MainActivity extends AppCompatActivity {
         catch (IOException e) { return new ArrayList<String>();}
         return retList;
     }
+}
+
+class ModelIndex {
+    public String modelname;
+    public String vertexfilename;
+    public String texfilename;
 }
