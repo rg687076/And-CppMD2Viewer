@@ -28,6 +28,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
+    private ArrayList<String> mDrwModel = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         /* mqoファイル一覧(model-index.json)を取得 */
-        HashMap<String, ModelIndex> modelmap = new HashMap<String, ModelIndex>();
+        HashMap<String, ModelIndex> modelindex = new HashMap<String, ModelIndex>();
+
         try {
             /* indexファイル読込み */
             InputStream fileInputStream = getAssets().open("model-index.json");
@@ -77,7 +79,8 @@ public class MainActivity extends AppCompatActivity {
                 ModelIndex mi = new ModelIndex() {{ modelname=md2model.getString("name");
                                                     vertexfilename=md2model.getString("vertex");
                                                     texfilename=md2model.getString("tex");}};
-                modelmap.put(md2model.getString("name"), mi);
+                mDrwModel.add(mi.modelname);
+                modelindex.put(md2model.getString("name"), mi);
             }
         }
         catch(IOException | JSONException e) {
@@ -86,14 +89,14 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> MainActivity.this.finish(), 10000);
         }
 
-        Log.d("aaaaa", "model数=" + modelmap.size());
-        for (Map.Entry<String, ModelIndex> item : modelmap.entrySet())
+        Log.d("aaaaa", "model数=" + modelindex.size());
+        for (Map.Entry<String, ModelIndex> item : modelindex.entrySet())
             System.out.println(item.getKey() + " => " + item.getValue().vertexfilename + " : " + item.getValue().texfilename);
 
         /* cpp側 初期化 */
-        String[] modelnames = modelmap.keySet().toArray(new String[0]);
-        String[] vertexnames= modelmap.values().stream().map(mi -> { return mi.vertexfilename;}).toArray(String[]::new);
-        String[] texnames   = modelmap.values().stream().map(mi -> { return mi.texfilename;}).toArray(String[]::new);
+        String[] modelnames = modelindex.keySet().toArray(new String[0]);
+        String[] vertexnames= modelindex.values().stream().map(mi -> { return mi.vertexfilename;}).toArray(String[]::new);
+        String[] texnames   = modelindex.values().stream().map(mi -> { return mi.texfilename;}).toArray(String[]::new);
         Jni.onCreate(getResources().getAssets(), modelnames, vertexnames, texnames);
     }
 
