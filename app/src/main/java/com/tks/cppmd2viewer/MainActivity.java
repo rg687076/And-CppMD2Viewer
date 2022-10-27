@@ -59,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
                 Jni.onDrawFrame();
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
         /* mqoファイル一覧(model-index.json)を取得 */
         HashMap<String, ModelIndex> modelindex = new HashMap<String, ModelIndex>();
@@ -77,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
             for(int lpct = 0; lpct < jsonarray.length(); lpct++) {
                 JSONObject md2model = jsonarray.getJSONObject(lpct);
                 ModelIndex mi = new ModelIndex() {{ modelname=md2model.getString("name");
-                                                    vertexfilename=md2model.getString("vertex");
-                                                    texfilename=md2model.getString("tex");}};
+                    vertexfilename=md2model.getString("vertex");
+                    texfilename=md2model.getString("tex");}};
                 mDrwModel.add(mi.modelname);
                 modelindex.put(md2model.getString("name"), mi);
             }
@@ -97,31 +102,13 @@ public class MainActivity extends AppCompatActivity {
         String[] modelnames = modelindex.keySet().toArray(new String[0]);
         String[] vertexnames= modelindex.values().stream().map(mi -> { return mi.vertexfilename;}).toArray(String[]::new);
         String[] texnames   = modelindex.values().stream().map(mi -> { return mi.texfilename;}).toArray(String[]::new);
-        Jni.onCreate(getResources().getAssets(), modelnames, vertexnames, texnames);
+        Jni.onStart(getResources().getAssets(), modelnames, vertexnames, texnames);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Jni.onDestroy();
-    }
-
-    private static List<String> getFiles( android.content.res.AssetManager am, String file) {
-        List<String> retList = new ArrayList<String>();
-        try {
-            String[] subfiles = am.list(file);
-            if(subfiles.length != 0) {
-                Arrays.stream(subfiles).forEach(f -> {
-                    retList.addAll(getFiles(am, file+"/"+f));
-                });
-            }
-            else {
-                retList.add(file);
-                return retList;
-            }
-        }
-        catch (IOException e) { return new ArrayList<String>();}
-        return retList;
+    protected void onStop() {
+        super.onStop();
+        Jni.onStop();
     }
 }
 

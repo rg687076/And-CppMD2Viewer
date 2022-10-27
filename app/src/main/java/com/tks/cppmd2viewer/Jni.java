@@ -7,9 +7,9 @@ public class Jni {
         System.loadLibrary("jni");
     }
 
-    public static native boolean onCreate(AssetManager assets, String[] object, String[] vertexnames, String[] texnames);
+    public static native boolean onStart(AssetManager assets, String[] object, String[] vertexnames, String[] texnames);
     public static native void onSurfaceCreated();
     public static native void onSurfaceChanged(int w, int h);
     public static native void onDrawFrame();
-    public static native void onDestroy();
+    public static native void onStop();
 }

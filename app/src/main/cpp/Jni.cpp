@@ -4,14 +4,14 @@
 #include <jni.h>
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
-#include "ModelInfos.h"
+#include "Md2Model.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onCreate(JNIEnv *env, jclass clazz, jobject assets,
-          jobjectArray modelnames, jobjectArray vertexnames, jobjectArray texnames) {
+JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
+                                                                 jobjectArray modelnames, jobjectArray vertexnames, jobjectArray texnames) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
     /* 引数チェック */
@@ -21,7 +21,6 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onCreate(JNIEnv *env, j
         return false;
     }
 
-    std::map<std::string, ModelInfo> modelInfos;
     /* AAssetManager取得 */
     AAssetManager *assetMgr = AAssetManager_fromJava(env, assets);
     if (assetMgr == nullptr) {
@@ -68,9 +67,9 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onCreate(JNIEnv *env, j
         /* AAsset::close */
         AAsset_close(texAssetFile);
 
-        /* ModelInfo追加 */
-        modelInfos.emplace(modelfilenamechar, ModelInfo{ .name=modelfilenamechar, .verfilename=verfilenamechar, .texfilename=texfilenamechar,
-                                                         .verbindata=std::move(verbuf), .texbindata=std::move(texbuf)});
+        /* Md2model追加 */
+        gMd2models.emplace(modelfilenamechar, Md2Model{ .name=modelfilenamechar, .verfilename=verfilenamechar, .texfilename=texfilenamechar,
+                                                       .verbindata=std::move(verbuf), .texbindata=std::move(texbuf)});
         /* char解放 */
         env->ReleaseStringUTFChars(modelfilenamejstr, modelfilenamechar);
         env->ReleaseStringUTFChars(verfilenamejstr, verfilenamechar);
@@ -82,6 +81,8 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onCreate(JNIEnv *env, j
         env->DeleteLocalRef(texfilenamejstr);
     }
 
+    /* Md2modelロード */
+    Md2Setup(std::move(gMd2models));
 
     return true;
 }
@@ -101,7 +102,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jc
     return;
 }
 
-JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDestroy(JNIEnv *env, jclass clazz) {
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onStop(JNIEnv *env, jclass clazz) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     return;
 }
