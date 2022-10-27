@@ -3,7 +3,7 @@
 		{ "name": "frog" , "vertex": "obj1.md2", "tex": "obj1.tga"},
 		{ "name": "paper", "vertex": "obj2.md2", "tex": "obj2.tga"}
 	],
-	"shader": [
+	"shaders": [
 		{ "colorfsh"  : "shaders/color.fsh"  },
 		{ "colorvsh"  : "shaders/color.vsh"  },
 		{ "texturefsh": "shaders/texture.fsh"},

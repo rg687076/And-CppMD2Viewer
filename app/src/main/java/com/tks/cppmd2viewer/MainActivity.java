@@ -65,9 +65,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        /* mqoファイル一覧(model-index.json)を取得 */
-        HashMap<String, ModelIndex> modelindex = new HashMap<String, ModelIndex>();
+        /* モデルindexs */
+        HashMap<String, ModelIndex> md2modelindex = new HashMap<>();
+        /* シェーダindexs */
+        HashMap<String, String> shaderindex = new HashMap<>();
 
+        /* モデルindexファイルs(model-index.json)を取得 */
         try {
             /* indexファイル読込み */
             InputStream fileInputStream = getAssets().open("model-index.json");
@@ -78,14 +81,22 @@ public class MainActivity extends AppCompatActivity {
             Log.i("index-content:", readString);
             /* jsonパース */
             JSONObject jsonObject = new JSONObject(readString);
+            /* jsonパース(md2models) */
             JSONArray jsonarray = jsonObject.getJSONArray("md2models");
             for(int lpct = 0; lpct < jsonarray.length(); lpct++) {
                 JSONObject md2model = jsonarray.getJSONObject(lpct);
                 ModelIndex mi = new ModelIndex() {{ modelname=md2model.getString("name");
-                    vertexfilename=md2model.getString("vertex");
-                    texfilename=md2model.getString("tex");}};
+                                                    vertexfilename=md2model.getString("vertex");
+                                                    texfilename=md2model.getString("tex");}};
                 mDrwModel.add(mi.modelname);
-                modelindex.put(md2model.getString("name"), mi);
+                md2modelindex.put(md2model.getString("name"), mi);
+            }
+            /* jsonパース(shaderファイル) */
+            JSONArray shaderjsonarray = jsonObject.getJSONArray("shaders");
+            for(int lpct = 0; lpct < shaderjsonarray.length(); lpct++) {
+                JSONObject shaderinfo = shaderjsonarray.getJSONObject(lpct);
+                String key = shaderinfo.keys().next();
+                shaderindex.put(key  , shaderinfo.getString(key));
             }
         }
         catch(IOException | JSONException e) {
@@ -94,15 +105,20 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> MainActivity.this.finish(), 10000);
         }
 
-        Log.d("aaaaa", "model数=" + modelindex.size());
-        for (Map.Entry<String, ModelIndex> item : modelindex.entrySet())
+        Log.d("aaaaa", "model数=" + md2modelindex.size());
+        for (Map.Entry<String, ModelIndex> item : md2modelindex.entrySet())
             System.out.println(item.getKey() + " => " + item.getValue().vertexfilename + " : " + item.getValue().texfilename);
+        Log.d("aaaaa", "shader数=" + shaderindex.size());
+        for (Map.Entry<String, String> item : shaderindex.entrySet())
+            System.out.println(item.getKey() + " => " + item.getValue());
 
         /* cpp側 初期化 */
-        String[] modelnames = modelindex.keySet().toArray(new String[0]);
-        String[] vertexnames= modelindex.values().stream().map(mi -> { return mi.vertexfilename;}).toArray(String[]::new);
-        String[] texnames   = modelindex.values().stream().map(mi -> { return mi.texfilename;}).toArray(String[]::new);
-        Jni.onStart(getResources().getAssets(), modelnames, vertexnames, texnames);
+        String[] modelnames = md2modelindex.keySet().toArray(new String[0]);
+        String[] vertexnames= md2modelindex.values().stream().map(mi -> { return mi.vertexfilename;}).toArray(String[]::new);
+        String[] texnames   = md2modelindex.values().stream().map(mi -> { return mi.texfilename;}).toArray(String[]::new);
+        String[] shaderkeys = shaderindex.keySet().toArray(new String[0]);
+        String[] shaderfiles= shaderindex.values().toArray(new String[0]);
+        Jni.onStart(getResources().getAssets(), modelnames, vertexnames, texnames, shaderkeys, shaderfiles);
     }
 
     @Override
