@@ -12,34 +12,86 @@ bool Md2Init(std::map<std::string, Md2ModelInfo> &md2models) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
     for(auto &[key, value] : gMd2models) {
-        bool ret = value.loadModel(value.verbindata, value.texbindata, 180, 30);
+        bool ret = value.loadModel(180, 30);
         if(ret == false) return false;
+        bool ret2 = value.loadSkin();
+        if(ret2 == false) return false;
     }
 
     return true;
 }
 
-bool Md2ModelInfo::loadModel(std::vector<char> &Md2file, std::vector<char> &Tgafile, float _size, float _fps) {
+Md2ModelInfo::~Md2ModelInfo() {
+    std::vector<char>().swap(md2bindata);
+    std::vector<char>().swap(texbindata);
+    delete [] m_vertices;
+    delete [] m_glcmds;
+    delete [] m_lightnormals;
+    delete [] m_wkbuff;
+}
+
+bool Md2ModelInfo::loadModel(float scale, float fps) {
     md2_t header = {0};
     /* MD2ファイルのパース */
-    std::istringstream streaaam(std::string(Md2file.begin(), Md2file.end()));
-    streaaam.read((char*)&header, sizeof(md2_t));
+    std::istringstream md2binstream(std::string(md2bindata.begin(), md2bindata.end()));
+    md2binstream.read((char*)&header, sizeof(md2_t));
 
-    /* MD2形式チェック() */
+    /* MD2形式チェック */
     if(header.ident != MD2_IDENT) { /* "IDP2"じゃないとエラー */
-        streaaam.str("");
-        streaaam.clear(std::stringstream::goodbit);
+        md2binstream.str("");
+        md2binstream.clear(std::stringstream::goodbit);
         const union { int i; char b[4]; } ngno = {header.ident};
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(majicnumber=%s) %s %s(%d)", ngno.b, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
 
     if(header.version != MD2_VERSION) { /* 8じゃないとエラー */
-        streaaam.str("");
-        streaaam.clear(std::stringstream::goodbit);
+        md2binstream.str("");
+        md2binstream.clear(std::stringstream::goodbit);
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(version=%s) %s %s(%d)", header.version, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
 
+    /* 領域確保 */
+    m_glcmds        = new int   [ header.num_glcmds ];
+    m_wkbuff        = new char  [header.num_frames * header.framesize ];
+    m_vertices      = new vec3_t[ header.num_xyz * header.num_frames ];
+    m_lightnormals  = new int   [ header.num_xyz * header.num_frames ];
+
+    /* OpenGLコマンド読込み */
+    md2binstream.seekg( header.ofs_glcmds, std::ios::beg );
+    md2binstream.read( (char *)m_glcmds, header.num_glcmds * sizeof( int ) );
+
+    /* (頂点/法線ベクトルindex)データ読込み */
+    md2binstream.seekg(header.ofs_frames, std::ios::beg);
+    md2binstream.read((char*)m_wkbuff, header.num_frames * header.framesize );
+
+    /* (頂点/法線ベクトルindex)データを頂点データと法線ベクトルindexデータに詰替え */
+    for(int lpj = 0; lpj < header.num_frames; lpj++ ){
+        frame_t	*frame     = (frame_t*)&m_wkbuff[header.framesize * lpj ];
+        vec3_t	*ptrverts  = &m_vertices[header.num_xyz * lpj ];
+        int     *ptrnormals= &m_lightnormals[header.num_xyz * lpj ];
+
+        for(int lpi = 0; lpi < header.num_xyz; lpi++ ){
+            /* 頂点データ詰替え(scaleと移動量を計算しとく) */
+            ptrverts[lpi][0] = (frame->verts[lpi].v[0] * frame->scale[0]) + frame->translate[0];
+            ptrverts[lpi][1] = (frame->verts[lpi].v[1] * frame->scale[1]) + frame->translate[1];
+            ptrverts[lpi][2] = (frame->verts[lpi].v[2] * frame->scale[2]) + frame->translate[2];
+            /* 法線ベクトルindexを詰替え */
+            ptrnormals[lpi] = frame->verts[lpi].lightnormalindex;
+        }
+    }
+
+    /* 後片付け */
+    delete[] m_wkbuff;
+    m_wkbuff = nullptr;
+    md2binstream.str("");                           /* バッファクリア */
+    md2binstream.clear(std::stringstream::goodbit); /* 状態クリア */
+
+    return true;
+}
+
+bool Md2ModelInfo::loadSkin() {
+    
     return true;
 }

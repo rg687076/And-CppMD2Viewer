@@ -78,7 +78,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
 
         /* Md2model追加 */
         gMd2models.emplace(modelfilenamechar, Md2ModelInfo{ .name=modelfilenamechar, .verfilename=verfilenamechar, .texfilename=texfilenamechar,
-                                                       .verbindata=std::move(verbuf), .texbindata=std::move(texbuf)});
+                                                       .md2bindata=std::move(verbuf), .texbindata=std::move(texbuf)});
         /* char解放 */
         env->ReleaseStringUTFChars(modelfilenamejstr, modelfilenamechar);
         env->ReleaseStringUTFChars(verfilenamejstr, verfilenamechar);

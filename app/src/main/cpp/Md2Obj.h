@@ -6,14 +6,22 @@
 #include <vector>
 #include <GLES2/gl2.h>
 
+typedef float vec3_t[3];
+
 class Md2ModelInfo {
 public:
     std::string         name;
     std::string         verfilename;
     std::string         texfilename;
-    std::vector<char>   verbindata;
+    std::vector<char>   md2bindata;
     std::vector<char>   texbindata;
-    bool loadModel(std::vector<char> &Md2file, std::vector<char> &Tgafile, float _size, float _fps );
+    vec3_t              *m_vertices     = nullptr;
+    int                 *m_glcmds       = nullptr;
+    int                 *m_lightnormals = nullptr;
+    char                *m_wkbuff       = nullptr;
+    ~Md2ModelInfo();
+    bool loadModel(float scale, float fps );
+    bool loadSkin();
 };
 
 /* Md2モデルs */
@@ -24,8 +32,6 @@ extern bool Md2Init(std::map<std::string, Md2ModelInfo> &md2models);
 
 #define MD2_IDENT   (('2'<<24) + ('P'<<16) + ('D'<<8) + 'I')    /* magic number "IDP2" or 844121161 */
 #define	MD2_VERSION 8                                           /* model version */
-
-typedef float vec3_t[3];
 
 /* md2 header */
 typedef struct {
@@ -38,7 +44,7 @@ typedef struct {
     int framesize;  /* 1フレームのサイズ[bytes] */
 
     int num_skins;  /* texture数 */
-    int num_xyz;    /* 頂点数 */
+    int num_xyz;    /* 頂点数(3角形とかn角形とか) */
     int num_st;     /* texture座標数 */
     int num_tris;   /* ポリゴン数 */
     int num_glcmds; /* openglコマンド数 */
