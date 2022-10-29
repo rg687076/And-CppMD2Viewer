@@ -44,11 +44,11 @@ typedef struct BITMAPCOREHEADER {   /* Windows Bitmap */
 typedef struct TGAHEADER {
     unsigned char	id_length;      /* size of the structure */
     unsigned char	color_map_type; /* カラーマップタイプ */
-    unsigned char	image_type;     /* 圧縮形式 */
+    unsigned char	image_type;     /* データ形式 */
 
-    short int		cm_first_entry; /* colormap_origin (通常0) */
-    short int		cm_length;      /* colormap_length (通常0) */
-    unsigned char	cm_size;        /* colormap_size (通常0) */
+    short int		cm_first_entry; /* colormap開始位置 (通常0) */
+    short int		cm_length;      /* colormap数 (通常0) */
+    unsigned char	cm_size;        /* colormapサイズ(bits) */
 
     short int		is_xorigin;     /* lower left X coordinate (0固定) */
     short int		is_yorigin;     /* lower left Y coordinate (0固定) */
@@ -60,6 +60,25 @@ typedef struct TGAHEADER {
     unsigned char	is_image_descriptor;// 24 bits = 0x00; 32 bits = 0x80 */
 
 } TgaHeader, *pTgaHeader;
+
+// --------------------------------------------
+// RGBTRIPLE - 24 bits pixel
+// --------------------------------------------
+typedef struct RGBTRIPLE {
+    unsigned char	rgbtBlue;		// blue
+    unsigned char	rgbtGreen;		// green
+    unsigned char	rgbtRed;		// red
+} RgbTriple, *pRgbTriple;
+
+// --------------------------------------------
+// BGRAQUAD - 32 bits pixel
+// --------------------------------------------
+typedef struct BGRAQUAD {
+    unsigned char	bgraBlue;		// blue
+    unsigned char	bgraGreen;		// green
+    unsigned char	bgraRed;		// red
+    unsigned char	bgraAlpha;		// alpha
+} BgraQuad, *pBgraQuad;
 
 #pragma pack(4)
 class TexInfo {
