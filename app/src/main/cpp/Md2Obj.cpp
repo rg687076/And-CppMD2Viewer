@@ -49,7 +49,7 @@ bool Md2ModelInfo::loadModel(float scale, float fps) {
     if(header.version != MD2_VERSION) { /* 8じゃないとエラー */
         md2binstream.str("");
         md2binstream.clear(std::stringstream::goodbit);
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(version=%s) %s %s(%d)", header.version, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(version=%d) %s %s(%d)", header.version, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
 
