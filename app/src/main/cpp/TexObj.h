@@ -60,7 +60,6 @@ typedef struct TGAHEADER {
     unsigned char	is_image_descriptor;// 24 bits = 0x00; 32 bits = 0x80 */
 
 } TgaHeader;
-#pragma pack()
 
 // --------------------------------------------
 // RGBTRIPLE - 24 bits pixel
@@ -70,6 +69,7 @@ typedef struct RGBTRIPLE {
     unsigned char	rgbtGreen;		// green
     unsigned char	rgbtRed;		// red
 } RgbTriple;
+#pragma pack()
 
 // --------------------------------------------
 // BGRAQUAD - 32 bits pixel
