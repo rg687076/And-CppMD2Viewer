@@ -59,7 +59,7 @@ typedef struct TGAHEADER {
     unsigned char	is_pixel_depth; /* 1画素のbit数: 16, 24, 32 */
     unsigned char	is_image_descriptor;// 24 bits = 0x00; 32 bits = 0x80 */
 
-} TgaHeader, *pTgaHeader;
+} TgaHeader;
 
 // --------------------------------------------
 // RGBTRIPLE - 24 bits pixel
@@ -68,7 +68,7 @@ typedef struct RGBTRIPLE {
     unsigned char	rgbtBlue;		// blue
     unsigned char	rgbtGreen;		// green
     unsigned char	rgbtRed;		// red
-} RgbTriple, *pRgbTriple;
+} RgbTriple;
 
 // --------------------------------------------
 // BGRAQUAD - 32 bits pixel
@@ -78,7 +78,7 @@ typedef struct BGRAQUAD {
     unsigned char	bgraGreen;		// green
     unsigned char	bgraRed;		// red
     unsigned char	bgraAlpha;		// alpha
-} BgraQuad, *pBgraQuad;
+} BgraQuad;
 
 #pragma pack(4)
 class TexInfo {
