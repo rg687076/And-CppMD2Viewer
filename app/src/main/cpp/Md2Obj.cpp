@@ -12,10 +12,13 @@ std::map<std::string, Md2ModelInfo> gMd2models;
 bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
+    /* scale=180, fps=30 */
     for(auto &[key, value] : gMd2models) {
-        bool ret = value.loadModel(180, 30);
+        bool ret = value.loadModel();
+        std::vector<char>().swap(value.md2bindata);
         if(ret == false) return false;
         bool ret2 = value.loadSkin();
+        std::vector<char>().swap(value.texbindata);
         if(ret2 == false) return false;
     }
 
@@ -31,7 +34,7 @@ Md2ModelInfo::~Md2ModelInfo() {
     delete [] m_wkbuff;
 }
 
-bool Md2ModelInfo::loadModel(float scale, float fps) {
+bool Md2ModelInfo::loadModel() {
     md2_t header = {0};
     /* MD2ファイルのパース */
     std::istringstream md2binstream(std::string(md2bindata.begin(), md2bindata.end()));

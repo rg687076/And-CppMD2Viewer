@@ -122,7 +122,7 @@ public:
     char                *m_wkbuff       = nullptr;
     TexInfo             texinfo;
     ~Md2ModelInfo();
-    bool loadModel(float scale, float fps );
+    bool loadModel();
     bool loadSkin();
 };
 
