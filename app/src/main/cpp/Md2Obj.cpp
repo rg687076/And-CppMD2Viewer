@@ -9,7 +9,7 @@
 std::map<std::string, Md2ModelInfo> gMd2models;
 
 /* Md2モデルsetup */
-bool Md2Init(std::map<std::string, Md2ModelInfo> &md2models) {
+bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
     for(auto &[key, value] : gMd2models) {

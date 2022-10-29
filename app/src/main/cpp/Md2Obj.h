@@ -129,7 +129,9 @@ public:
 /* Md2モデルs */
 extern std::map<std::string, Md2ModelInfo> gMd2models;
 
-/* プロトタイプ宣言 */
-extern bool Md2Init(std::map<std::string, Md2ModelInfo> &md2models);
+class Md2Obj {
+public:
+    static bool Init(std::map<std::string, Md2ModelInfo> &md2models);
+};
 
 #endif //CPPMD2VIEWER_MD2OBJ_H
