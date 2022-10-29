@@ -16,8 +16,8 @@ typedef struct BITMAPFILEHEADER {
     short   reserve2;   /* 予約領域2 */
     int     offset2bin; /* ファイル先頭から画像データまでのオフセット(byte) */
 } BmpFileHeader;
+#pragma pack()
 
-#pragma pack(4)
 typedef struct BITMAPINFOHEADER {   /* Windows Bitmap */
     int     headersize; /* ヘッダサイズ */
     int     width;      /* 画像幅 */
@@ -60,6 +60,7 @@ typedef struct TGAHEADER {
     unsigned char	is_image_descriptor;// 24 bits = 0x00; 32 bits = 0x80 */
 
 } TgaHeader;
+#pragma pack()
 
 // --------------------------------------------
 // RGBTRIPLE - 24 bits pixel
@@ -80,7 +81,6 @@ typedef struct BGRAQUAD {
     unsigned char	bgraAlpha;		// alpha
 } BgraQuad;
 
-#pragma pack(4)
 class TexInfo {
 public:
     int mWidth = 0;
@@ -96,6 +96,5 @@ public:
 };
 
 TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream);
-
 
 #endif //CPPMD2VIEWER_TEXOBJ_H
