@@ -7,31 +7,6 @@
 #include <GLES2/gl2.h>
 #include "TexObj.h"
 
-typedef float vec3_t[3];
-
-class Md2ModelInfo {
-public:
-    std::string         name;
-    std::string         verfilename;
-    std::string         texfilename;
-    std::vector<char>   md2bindata;
-    std::vector<char>   texbindata;
-    vec3_t              *m_vertices     = nullptr;
-    int                 *m_glcmds       = nullptr;
-    int                 *m_lightnormals = nullptr;
-    char                *m_wkbuff       = nullptr;
-    TexInfo             texinfo;
-    ~Md2ModelInfo();
-    bool loadModel(float scale, float fps );
-    bool loadSkin();
-};
-
-/* Md2モデルs */
-extern std::map<std::string, Md2ModelInfo> gMd2models;
-
-/* プロトタイプ宣言 */
-extern bool Md2Init(std::map<std::string, Md2ModelInfo> &md2models);
-
 #define MD2_IDENT   (('2'<<24) + ('P'<<16) + ('D'<<8) + 'I')    /* magic number "IDP2" or 844121161 */
 #define	MD2_VERSION 8                                           /* model version */
 
@@ -131,5 +106,30 @@ public:
     GLfloat y;
     GLfloat z;
 };
+
+typedef float vec3_t[3];
+
+class Md2ModelInfo {
+public:
+    std::string         name;
+    std::string         verfilename;
+    std::string         texfilename;
+    std::vector<char>   md2bindata;
+    std::vector<char>   texbindata;
+    vec3_t              *m_vertices     = nullptr;
+    int                 *m_glcmds       = nullptr;
+    int                 *m_lightnormals = nullptr;
+    char                *m_wkbuff       = nullptr;
+    TexInfo             texinfo;
+    ~Md2ModelInfo();
+    bool loadModel(float scale, float fps );
+    bool loadSkin();
+};
+
+/* Md2モデルs */
+extern std::map<std::string, Md2ModelInfo> gMd2models;
+
+/* プロトタイプ宣言 */
+extern bool Md2Init(std::map<std::string, Md2ModelInfo> &md2models);
 
 #endif //CPPMD2VIEWER_MD2OBJ_H
