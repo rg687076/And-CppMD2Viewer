@@ -135,6 +135,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Init()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
+
     GlInit(gShaderInfo);
 
     return true;

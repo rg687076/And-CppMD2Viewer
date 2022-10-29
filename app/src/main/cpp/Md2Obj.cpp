@@ -14,12 +14,20 @@ bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
 
     /* scale=180, fps=30 */
     for(auto &[key, value] : gMd2models) {
+        /* MD2モデルLoad */
         bool ret = value.loadModel();
         std::vector<char>().swap(value.md2bindata);
         if(ret == false) return false;
+        /* テクスチャLoad */
         bool ret2 = value.loadSkin();
         std::vector<char>().swap(value.texbindata);
         if(ret2 == false) return false;
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2 and Texture LOADED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        /* アニメーション初期化 */
+        value.animlist[0].last_frame= value.num_frames;
+        value.animlist[0].fps       = 23;
+        value.setAnim(0);
+        value.m_scale               = 180;
     }
 
     return true;
@@ -55,6 +63,11 @@ bool Md2ModelInfo::loadModel() {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(version=%d) %s %s(%d)", header.version, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
+
+    /* 初期化 */
+    num_frames	= header.num_frames;
+    num_xyz		= header.num_xyz;
+    num_glcmds	= header.num_glcmds;
 
     /* 領域確保 */
     m_glcmds        = new int   [ header.num_glcmds ];
@@ -126,4 +139,14 @@ bool Md2ModelInfo::loadSkin() {
     }
 
     return false;
+}
+
+void Md2ModelInfo::setAnim( int type ) {
+    if( (type < 0) || (type > MAX_ANIMATIONS) )	type = 0;
+
+    m_anim.startframe	= animlist[ type ].first_frame;
+    m_anim.endframe		= animlist[ type ].last_frame;
+    m_anim.next_frame	= animlist[ type ].first_frame + 1;
+    m_anim.fps			= animlist[ type ].fps;
+    m_anim.type			= type;
 }
