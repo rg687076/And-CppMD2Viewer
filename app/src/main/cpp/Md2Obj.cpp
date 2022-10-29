@@ -3,6 +3,7 @@
 #include <sstream>
 #include <android/log.h>
 #include "Md2Obj.h"
+#include "TexObj.h"
 
 /* Md2モデルデータ実体 */
 std::map<std::string, Md2ModelInfo> gMd2models;
@@ -92,6 +93,34 @@ bool Md2ModelInfo::loadModel(float scale, float fps) {
 }
 
 bool Md2ModelInfo::loadSkin() {
-    
-    return true;
+    /* Textureファイルのパース */
+    std::istringstream texbinstream(std::string(texbindata.begin(), texbindata.end()));
+    /* フォーマットチェック(BMP) */
+    char bm[2] = {0};
+    texbinstream.read(bm, sizeof(bm));
+    if(bm[0]=='B' && bm[1]=='M') {
+        /* BMP形式確定 */
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", " BMP形式(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        texinfo = LoadTexture(FileFormat::BMP, texbinstream);
+        return true;
+    }
+    else {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", " BMP形式ではない(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    }
+
+    /* フォーマットチェック(TGA) */
+    texbinstream.seekg(-18, std::ios::end );
+    char TRUEVISION_TARGA[18] = {0};
+    texbinstream.read(TRUEVISION_TARGA, sizeof(TRUEVISION_TARGA));
+    if(std::string(TRUEVISION_TARGA).find("TRUEVISION-") == 0) {
+        /* TGA形式確定 */
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", " TGA形式(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        texinfo = LoadTexture(FileFormat::TGA, texbinstream);
+        return true;
+    }
+    else {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", " TGA形式ではない(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    }
+
+    return false;
 }

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.18.1)
 project("cppmd2viewer")
 
 add_library(jni SHARED Jni.cpp)
-add_library(md2model SHARED Md2Obj.cpp)
+add_library(md2model SHARED Md2Obj.cpp TexObj.cpp)
 add_library(globj SHARED GlObj.cpp)
 
 find_library(log-lib log)

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <GLES2/gl2.h>
+#include "TexObj.h"
 
 typedef float vec3_t[3];
 
@@ -19,6 +20,7 @@ public:
     int                 *m_glcmds       = nullptr;
     int                 *m_lightnormals = nullptr;
     char                *m_wkbuff       = nullptr;
+    TexInfo             texinfo;
     ~Md2ModelInfo();
     bool loadModel(float scale, float fps );
     bool loadSkin();
