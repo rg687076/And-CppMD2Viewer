@@ -1,5 +1,5 @@
 /**********************************************************/
-/*  mqo.vsh                                               */
+/*  texture.vsh                                           */
 /*                                                        */
 /*  Created by hgiashijima on 2016/11/20                  */
 /*  Copyright (c) 2016年 higashijima. All rights reserved.*/

@@ -11,8 +11,8 @@
 #define	MD2_VERSION 8                                           /* model version */
 
 /* md2 header */
-typedef struct {
-    int ident;      /* Magic Number. "IPD2"固定 */
+struct md2header {
+    int magicnumber;/* Magic Number. "IPD2"固定 */
     int version;    /* md2 version. 現在は8. */
 
     int skinwidth;  /* textureサイズ(width) */
@@ -20,144 +20,85 @@ typedef struct {
 
     int framesize;  /* 1フレームのサイズ[bytes] */
 
-    int num_skins;  /* texture数 */
-    int num_xyz;    /* 頂点数(3角形とかn角形とか) */
-    int num_st;     /* texture座標数 */
-    int num_tris;   /* ポリゴン数 */
-    int num_glcmds; /* openglコマンド数 */
-    int num_frames; /* 総フレーム数 */
+    int num_skins;      /* texture数 */
+    int num_vertexs;    /* 頂点数(3角形とかn角形とか) */
+    int num_st;         /* texture座標数 */
+    int num_polys;       /* ポリゴン数 */
+    int num_glcmds;     /* openglコマンド数 */
+    int num_totalframes;/* 総フレーム数 */
 
-    int ofs_skins;  /* テクスチャ名までのoffset(64 bytes) */
-    int ofs_st;     /* texture座標までのoffset(s-t) */
-    int ofs_tris;   /* 頂点情報までのoffset */
-    int ofs_frames; /* フレームデータまでのoffset */
-    int ofs_glcmds; /* openglコマンドまでのoffset */
-    int ofs_end;    /* ファイルの終端 */
-} md2_t;
-
-/* vertex情報 */
-typedef struct {
-    unsigned char v[3];				/* 圧縮された頂点 (x、y、z) 座標 */
-    unsigned char lightnormalindex;	/* 照明の法線ベクトルへのインデックス */
-} vertex_t;
-
-/* frame情報 */
-typedef struct {
-    float		scale[3];     /* scale値 */
-    float		translate[3]; /* 移動量 */
-    char		name[16];     /* frame名称 */
-    vertex_t	verts[1];     /* このフレームの最初の頂点 */
-} frame_t;
-
-/* animation情報 */
-typedef struct {
-    int		first_frame; /* このアニメーションの最初のフレーム */
-    int		last_frame;  /* frames数 */
-    int		fps;         /* fps */
-} anim_t;
-
-/* status animation */
-typedef struct {
-    int		startframe; /* 初回frame */
-    int		endframe;   /* 最終frame */
-    int		fps;        /* このanimationでのfps */
-
-    float	curr_time;  /* current time */
-    float	old_time;   /* old time */
-    float	interpol;   /* 補間のパーセント(percent of interpolation) */
-
-    int		type;       /* animationタイプ */
-
-    int		curr_frame; /* current frame */
-    int		next_frame; /* next frame */
-} animState_t;
-
-/* animation list */
-typedef enum {
-    STAND,
-    RUN,
-    ATTACK,
-    PAIN_A,
-    PAIN_B,
-    PAIN_C,
-    JUMP,
-    FLIP,
-    SALUTE,
-    FALLBACK,
-    WAVE,
-    POINTE,
-    CROUCH_STAND,
-    CROUCH_WALK,
-    CROUCH_ATTACK,
-    CROUCH_PAIN,
-    CROUCH_DEATH,
-    DEATH_FALLBACK,
-    DEATH_FALLFORWARD,
-    DEATH_FALLBACKSLOW,
-    BOOM,
-
-    MAX_ANIMATIONS
-} animType_t;
-
-class glRot{
-public:
-    GLfloat angle;
-    GLfloat x;
-    GLfloat y;
-    GLfloat z;
+    int offset_skins;   /* テクスチャ名までのoffset(64 bytes) */
+    int offset_st;      /* uv座標までのoffset(s-t) */
+    int offset_meshs;   /* mesh情報までのoffset */
+    int offset_frames;  /* フレームデータまでのoffset */
+    int offset_glcmds;  /* openglコマンドまでのoffset */
+    int offset_end;     /* ファイルの終端 */
 };
 
-typedef float vec3_t[3];
+struct vertex {
+    float v[3];
+};
+
+struct texstcoord {
+    float s;
+    float t;
+};
+
+struct texindex {
+    short s;
+    short t;
+};
+
+struct mesh {
+    unsigned short meshIndex[3];
+    unsigned short stIndex[3];
+};
+
+struct framePoint_t {
+    unsigned char v[3];
+    unsigned char normalIndex;
+};
+
+struct frame {
+    float scale[3];
+    float translate[3];
+    char name[16];  /* ← 何者か不明,けっこう文字化けする,どっちにしても未使用 */
+    framePoint_t fp[1];
+};
+
+struct MdlData {
+    int numTotalFrames;
+    int numVertexsPerFrame;
+    int numPolys;
+    int twidth;
+    int theight;
+    int currentFrame;
+    int nextFrame;
+    float interpol;
+    std::vector<vertex>     vertexList;
+    std::vector<texstcoord> st;
+    std::vector<mesh>       polyIndex;
+    float x, y, z;
+    float nextX, nextY, nextZ;
+    float radius;
+    float dist_to_player;
+    int state;
+    float speed;
+};
 
 class Md2ModelInfo {
 public:
-    std::string         name;
-    std::string         verfilename;
-    std::string         texfilename;
-    std::vector<char>   md2bindata;
-    std::vector<char>   texbindata;
-    vec3_t              *m_vertices     = nullptr;
-    int                 *m_glcmds       = nullptr;
-    int                 *m_lightnormals = nullptr;
-    char                *m_wkbuff       = nullptr;
-    TexInfo             texinfo;
-    int		num_frames;			// フレーム数
-    int		num_xyz;			// 頂点数
-    int		num_glcmds;			// opengl command数
+    std::string         name = {0};
+    std::string         verfilename = {0};
+    std::string         texfilename = {0};
+    std::vector<char>   md2bindata = {0};
+    std::vector<char>   texbindata = {0};
+    MdlData             mdldata = {0};
 
 public:
     ~Md2ModelInfo();
     bool loadModel();
     bool loadSkin();
-    void setAnim( int type );
-
-public:
-    animState_t m_anim;				// animation
-    float       m_scale;			// scale value
-    anim_t      animlist[21] = {    // animation list
-            // first, last, fps
-            {   0,  39,  9 },	// STAND
-            {  40,  45, 10 },	// RUN
-            {  46,  53, 10 },	// ATTACK
-            {  54,  57,  7 },	// PAIN_A
-            {  58,  61,  7 },	// PAIN_B
-            {  62,  65,  7 },	// PAIN_C
-            {  66,  71,  7 },	// JUMP
-            {  72,  83,  7 },	// FLIP
-            {  84,  94,  7 },	// SALUTE
-            {  95, 111, 10 },	// FALLBACK
-            { 112, 122,  7 },	// WAVE
-            { 123, 134,  6 },	// POINT
-            { 135, 153, 10 },	// CROUCH_STAND
-            { 154, 159,  7 },	// CROUCH_WALK
-            { 160, 168, 10 },	// CROUCH_ATTACK
-            { 196, 172,  7 },	// CROUCH_PAIN
-            { 173, 177,  5 },	// CROUCH_DEATH
-            { 178, 183,  7 },	// DEATH_FALLBACK
-            { 184, 189,  7 },	// DEATH_FALLFORWARD
-            { 190, 197,  7 },	// DEATH_FALLBACKSLOW
-            { 198, 198,  5 },	// BOOM
-    };
 };
 
 /* Md2モデルs */

@@ -8,26 +8,21 @@
 /* Md2モデルデータ実体 */
 std::map<std::string, Md2ModelInfo> gMd2models;
 
-/* Md2モデルsetup */
+/* Md2モデル初期化(model読込,tex読込) */
 bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
-    /* scale=180, fps=30 */
     for(auto &[key, value] : gMd2models) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model losd start (%s). %s %s(%d)", value.name.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         /* MD2モデルLoad */
         bool ret = value.loadModel();
         std::vector<char>().swap(value.md2bindata);
-        if(ret == false) return false;
+        if( !ret) return false;
         /* テクスチャLoad */
         bool ret2 = value.loadSkin();
         std::vector<char>().swap(value.texbindata);
-        if(ret2 == false) return false;
+        if( !ret2) return false;
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2 and Texture LOADED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-        /* アニメーション初期化 */
-        value.animlist[0].last_frame= value.num_frames;
-        value.animlist[0].fps       = 23;
-        value.setAnim(0);
-        value.m_scale               = 180;
     }
 
     return true;
@@ -36,74 +31,92 @@ bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
 Md2ModelInfo::~Md2ModelInfo() {
     std::vector<char>().swap(md2bindata);
     std::vector<char>().swap(texbindata);
-    delete [] m_vertices;
-    delete [] m_glcmds;
-    delete [] m_lightnormals;
-    delete [] m_wkbuff;
 }
 
 bool Md2ModelInfo::loadModel() {
-    md2_t header = {0};
-    /* MD2ファイルのパース */
-    std::istringstream md2binstream(std::string(md2bindata.begin(), md2bindata.end()));
-    md2binstream.read((char*)&header, sizeof(md2_t));
+//    std::istringstream md2binstream(std::string(md2bindata.begin(), md2bindata.end()));
+//    md2binstream.read((char*)&header, sizeof(md2header));
+//    md2binstream.str("");
+//    md2binstream.clear(std::stringstream::goodbit);
+
+    /* MD2ヘッダ */
+    md2header *header = (md2header*)md2bindata.data();
 
     /* MD2形式チェック */
-    if(header.ident != MD2_IDENT) { /* "IDP2"じゃないとエラー */
-        md2binstream.str("");
-        md2binstream.clear(std::stringstream::goodbit);
-        const union { int i; char b[4]; } ngno = {header.ident};
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(majicnumber=%s) %s %s(%d)", ngno.b, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    if(header->magicnumber != MD2_IDENT) { /* "IDP2"じゃないとエラー */
+        std::vector<char>().swap(md2bindata);
+        const union { int i; char b[4]; } ngno = {header->magicnumber};
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(magicnumber=%s) %s %s(%d)", ngno.b, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
 
-    if(header.version != MD2_VERSION) { /* 8じゃないとエラー */
-        md2binstream.str("");
-        md2binstream.clear(std::stringstream::goodbit);
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(version=%d) %s %s(%d)", header.version, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    if(header->version != MD2_VERSION) { /* 8じゃないとエラー */
+        std::vector<char>().swap(md2bindata);
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "MD2フォーマット不正(version=%d) %s %s(%d)", header->version, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
 
     /* 初期化 */
-    num_frames	= header.num_frames;
-    num_xyz		= header.num_xyz;
-    num_glcmds	= header.num_glcmds;
+    mdldata.numVertexsPerFrame= header->num_vertexs;
+    mdldata.numTotalFrames    = header->num_totalframes;
 
-    /* 領域確保 */
-    m_glcmds        = new int   [ header.num_glcmds ];
-    m_wkbuff        = new char  [header.num_frames * header.framesize ];
-    m_vertices      = new vec3_t[ header.num_xyz * header.num_frames ];
-    m_lightnormals  = new int   [ header.num_xyz * header.num_frames ];
+    /* 頂点読込み */
+    mdldata.vertexList.resize(header->num_vertexs * header->num_totalframes);
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "1frame当りの頂点数(%d)と総フレーム数(%d) %s %s(%d)", header->num_vertexs, header->num_totalframes, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    for(size_t lpct = 0; lpct < header->num_totalframes; lpct++) {
+        frame *lframe = (frame*)&(md2bindata[header->offset_frames + header->framesize * lpct]);
+        vertex *pvertex = &mdldata.vertexList[header->num_vertexs * lpct];
+        for (size_t lpct2 = 0; lpct2 < header->num_vertexs; lpct2++) {
+            pvertex[lpct2].v[0] = lframe->scale[0] * lframe->fp[lpct2].v[0] + lframe->translate[0];
+            pvertex[lpct2].v[1] = lframe->scale[1] * lframe->fp[lpct2].v[1] + lframe->translate[1];
+            pvertex[lpct2].v[2] = lframe->scale[2] * lframe->fp[lpct2].v[2] + lframe->translate[2];
 
-    /* OpenGLコマンド読込み */
-    md2binstream.seekg( header.ofs_glcmds, std::ios::beg );
-    md2binstream.read( (char *)m_glcmds, header.num_glcmds * sizeof( int ) );
-
-    /* (頂点/法線ベクトルindex)データ読込み */
-    md2binstream.seekg(header.ofs_frames, std::ios::beg);
-    md2binstream.read((char*)m_wkbuff, header.num_frames * header.framesize );
-
-    /* (頂点/法線ベクトルindex)データを頂点データと法線ベクトルindexデータに詰替え */
-    for(int lpj = 0; lpj < header.num_frames; lpj++ ){
-        frame_t	*frame     = (frame_t*)&m_wkbuff[header.framesize * lpj ];
-        vec3_t	*ptrverts  = &m_vertices[header.num_xyz * lpj ];
-        int     *ptrnormals= &m_lightnormals[header.num_xyz * lpj ];
-
-        for(int lpi = 0; lpi < header.num_xyz; lpi++ ){
-            /* 頂点データ詰替え(scaleと移動量を計算しとく) */
-            ptrverts[lpi][0] = (frame->verts[lpi].v[0] * frame->scale[0]) + frame->translate[0];
-            ptrverts[lpi][1] = (frame->verts[lpi].v[1] * frame->scale[1]) + frame->translate[1];
-            ptrverts[lpi][2] = (frame->verts[lpi].v[2] * frame->scale[2]) + frame->translate[2];
-            /* 法線ベクトルindexを詰替え */
-            ptrnormals[lpi] = frame->verts[lpi].lightnormalindex;
+            if(lpct > (header->num_totalframes-5))
+                __android_log_print(ANDROID_LOG_INFO, "aaaaa", "pvertex[%d].v(%f,%f,%f) %s %s(%d)", lpct, pvertex[lpct2].v[0], pvertex[lpct2].v[0], pvertex[lpct2].v[0],  __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         }
     }
 
-    /* 後片付け */
-    delete[] m_wkbuff;
-    m_wkbuff = nullptr;
-    md2binstream.str("");                           /* バッファクリア */
-    md2binstream.clear(std::stringstream::goodbit); /* 状態クリア */
+    /* uvデータ読込み */
+    mdldata.st.resize(header->num_st);
+    texindex *sts = (texindex*)&md2bindata[header->offset_st];
+    for (size_t lpct = 0; lpct < header->num_st; lpct++) {
+        mdldata.st[lpct].s = static_cast<float>(sts[lpct].s) / static_cast<float>(header->skinwidth);
+        mdldata.st[lpct].t = static_cast<float>(sts[lpct].t) / static_cast<float>(header->skinheight);
+
+        if(lpct > (header->num_st-5))
+            __android_log_print(ANDROID_LOG_INFO, "aaaaa", "mdldata.st[%d].st(%f,%f) %s %s(%d)", lpct, mdldata.st[lpct].s, mdldata.st[lpct].t, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    }
+
+    /* mesh情報読込み */
+    mdldata.polyIndex.resize(header->num_polys);
+    mdldata.numPolys = header->num_polys;
+    mesh *polyIndex = (mesh*)&md2bindata[header->offset_meshs];
+
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "header->num_polys=%d header->offsetMesh=%d %s %s(%d)", header->num_polys, header->offset_meshs, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+    for (size_t lpct = 0; lpct < header->num_polys; lpct++) {
+        mdldata.polyIndex[lpct].meshIndex[0] = polyIndex[lpct].meshIndex[0];
+        mdldata.polyIndex[lpct].meshIndex[1] = polyIndex[lpct].meshIndex[1];
+        mdldata.polyIndex[lpct].meshIndex[2] = polyIndex[lpct].meshIndex[2];
+
+        mdldata.polyIndex[lpct].stIndex[0] = polyIndex[lpct].stIndex[0];
+        mdldata.polyIndex[lpct].stIndex[1] = polyIndex[lpct].stIndex[1];
+        mdldata.polyIndex[lpct].stIndex[2] = polyIndex[lpct].stIndex[2];
+
+        if(lpct > (header->num_polys - 5))
+            __android_log_print(ANDROID_LOG_INFO, "aaaaa", "mdldata.polyIndex[%d].meshIndex(%d,%d,%d) mdldata.polyIndex[%d].stIndex(%d,%d,%d) %s %s(%d)",
+                                lpct, mdldata.polyIndex[lpct].meshIndex[0], mdldata.polyIndex[lpct].meshIndex[1], mdldata.polyIndex[lpct].meshIndex[2],
+                                lpct, mdldata.polyIndex[lpct].stIndex[0], mdldata.polyIndex[lpct].stIndex[0], mdldata.polyIndex[lpct].stIndex[0],
+                                __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    }
+
+    /* アニメ関連情報初期化 */
+    mdldata.currentFrame = 0;
+    mdldata.nextFrame = 1;
+    mdldata.interpol = 0.0;
+
+    /* MD2バイナリデータ解放 */
+    std::vector<char>().swap(md2bindata);
 
     return true;
 }
@@ -117,7 +130,7 @@ bool Md2ModelInfo::loadSkin() {
     if(bm[0]=='B' && bm[1]=='M') {
         /* BMP形式確定 */
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", " BMP形式(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-        texinfo = LoadTexture(FileFormat::BMP, texbinstream);
+//        texinfo = LoadTexture(FileFormat::BMP, texbinstream);
         return true;
     }
     else {
@@ -131,7 +144,7 @@ bool Md2ModelInfo::loadSkin() {
     if(std::string(TRUEVISION_TARGA).find("TRUEVISION-") == 0) {
         /* TGA形式確定 */
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", " TGA形式(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-        texinfo = LoadTexture(FileFormat::TGA, texbinstream);
+//        texinfo = LoadTexture(FileFormat::TGA, texbinstream);
         return true;
     }
     else {
@@ -139,14 +152,4 @@ bool Md2ModelInfo::loadSkin() {
     }
 
     return false;
-}
-
-void Md2ModelInfo::setAnim( int type ) {
-    if( (type < 0) || (type > MAX_ANIMATIONS) )	type = 0;
-
-    m_anim.startframe	= animlist[ type ].first_frame;
-    m_anim.endframe		= animlist[ type ].last_frame;
-    m_anim.next_frame	= animlist[ type ].first_frame + 1;
-    m_anim.fps			= animlist[ type ].fps;
-    m_anim.type			= type;
 }
