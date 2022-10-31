@@ -136,8 +136,6 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         return false;
     }
 
-    GlInit(gShaderInfo);
-
     return true;
 }
 

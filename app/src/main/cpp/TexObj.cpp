@@ -1,30 +1,35 @@
 #include <sstream>
 #include <android/log.h>
 #include "TexObj.h"
+#include "GlObj.h"
 
-TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
-    TexInfo retTexInfo;
+TexData TexData::LoadTexture(FileFormat format, std::vector<char> &texbindata) {
+    TexData retTexInfo;
 
-    istringstream.seekg(0, std::ios::beg );
+    std::istringstream texbinstream(std::string(texbindata.begin(), texbindata.end()));
+    texbinstream.seekg(0, std::ios::beg );
     /* BMPフォーマット */
-    if(ffmt == FileFormat::BMP) {
+    if(format == FileFormat::BMP) {
         int bitdepth = 0;
         BmpFileHeader fileHeader = {0};
-        istringstream.read((char*)&fileHeader, sizeof(BmpFileHeader));
+        texbinstream.read((char*)&fileHeader, sizeof(BmpFileHeader));
         /* 'B','M'はじまりのチェックは完了している */
 
         /* ヘッダサイズ(40:Windows Bitmapのサイズ or 12:OS/2 Bitmapのサイズ) */
         int headersize = 0;
-        istringstream.read((char*)&headersize, sizeof(int));
+        texbinstream.read((char*)&headersize, sizeof(int));
         if(headersize != 40 && headersize != 12) {
             /* フォーマット不正 : 40:Windows Bitmapのサイズ,12:OS/2 Bitmapのサイズのどちらでもない */
             __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Failed format!! offset2bin=%d(not equal 40 or 12)\n", headersize);
+            retTexInfo.mWidth = 0;
+            retTexInfo.mHeight= 0;
+            std::vector<char>().swap(retTexInfo.mRgbaBuf);
             return retTexInfo;
         }
         else if(headersize == 40) {
             /* Windows Bitmap(40byte) */
             BitmapInfoHeader bmpinfoheader = {.headersize=headersize};
-            istringstream.read((char*)&(bmpinfoheader.width), sizeof(BitmapInfoHeader)-sizeof(int));
+            texbinstream.read((char*)&(bmpinfoheader.width), sizeof(BitmapInfoHeader)-sizeof(int));
             retTexInfo.mWidth = bmpinfoheader.width;
             retTexInfo.mHeight= bmpinfoheader.height;
             bitdepth = bmpinfoheader.bitdepth;
@@ -33,13 +38,14 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                 __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Not Supported comptype=%d bitdepth=%d\n", bmpinfoheader.comptype, bitdepth);
                 retTexInfo.mWidth = 0;
                 retTexInfo.mHeight= 0;
+                std::vector<char>().swap(retTexInfo.mRgbaBuf);
                 return retTexInfo;
             }
         }
         else if(headersize == 12) {
             /* OS/2 Bitmap(12byte) */
             BitmapCoreHeader bitmapcoreheader = {.headersize=headersize};
-            istringstream.read((char*)&(bitmapcoreheader.width), sizeof(BitmapCoreHeader)-sizeof(int));
+            texbinstream.read((char*)&(bitmapcoreheader.width), sizeof(BitmapCoreHeader)-sizeof(int));
             retTexInfo.mWidth = bitmapcoreheader.width;
             retTexInfo.mHeight= bitmapcoreheader.height;
             bitdepth = bitmapcoreheader.bitdepth;
@@ -48,16 +54,17 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                 __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "Not Supported bitdepth=%d", bitdepth);
                 retTexInfo.mWidth = 0;
                 retTexInfo.mHeight= 0;
+                std::vector<char>().swap(retTexInfo.mRgbaBuf);
                 return retTexInfo;
             }
         }
 
         /* BGRデータまで移動 */
-        istringstream.seekg(fileHeader.offset2bin, std::ios::beg);
+        texbinstream.seekg(fileHeader.offset2bin, std::ios::beg);
         /* BGRデータ一括取得 */
         int imagesize3 = retTexInfo.mWidth*retTexInfo.mHeight*3;
         char* buf = (char*)malloc(imagesize3);
-        istringstream.read(buf, imagesize3);
+        texbinstream.read(buf, imagesize3);
 
         /* RGBAデータに変換 */
         int imagesize4 = retTexInfo.mWidth*retTexInfo.mHeight*4;
@@ -69,13 +76,17 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
             retTexInfo.mRgbaBuf[rgba + 3] = 0xff;
         }
         free(buf);
-        return retTexInfo;
+
+//      正常系の終了処理は、関数最後で実施
+//      /* OpenGLのTexture初期化 */
+//      auto[boolret, texid] = GlObj::TexInit(retTexInfo.mWidth, retTexInfo.mHeight, retTexInfo.mRgbaBuf);
+//      return retTexInfo;
     }
     /* TGAフォーマット */
-    else if(ffmt == FileFormat::TGA) {
+    else if(format == FileFormat::TGA) {
         /* ヘッダ読込 */
         TgaHeader tgaheader;
-        istringstream.read((char*)&tgaheader, sizeof(TgaHeader));
+        texbinstream.read((char*)&tgaheader, sizeof(TgaHeader));
 
         /* 画像幅/高さ取得 */
         retTexInfo.mWidth = tgaheader.is_width;
@@ -85,11 +96,11 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
         retTexInfo.mRgbaBuf.resize(tgaheader.is_width * tgaheader.is_height * 4);
 
         /* カラーパレット読込み */
-        std::unique_ptr<RgbTriple[]> pPalette = nullptr;
+        std::unique_ptr<RgbTriple[]> colorpalette = nullptr;
         if(tgaheader.color_map_type) {
             /* 24ビットイメージと32ビットイメージはパレット化されない */
-            pPalette = std::make_unique<RgbTriple[]>(tgaheader.cm_length);
-            istringstream.read((char*)&(pPalette[0]), sizeof(RgbTriple) * tgaheader.cm_length);
+            colorpalette = std::make_unique<RgbTriple[]>(tgaheader.cm_length);
+            texbinstream.read((char*)&(colorpalette[0]), sizeof(RgbTriple) * tgaheader.cm_length);
         }
 
         bool flipvert = true;
@@ -106,12 +117,12 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                     for(int col = 0; col < tgaheader.is_width; col++, ptr += 4 ) {
                         // read the current pixel
                         unsigned char coloridx;
-                        istringstream.read((char*)&coloridx, sizeof(unsigned char));
+                        texbinstream.read((char*)&coloridx, sizeof(unsigned char));
 
                         // convert indexed pixel (8 bits) into rgba (32 bits) pixel
-                        ptr[0] = pPalette[ coloridx ].rgbtRed;  // b->r
-                        ptr[1] = pPalette[ coloridx ].rgbtGreen;// g->g
-                        ptr[2] = pPalette[ coloridx ].rgbtBlue; // r->b
+                        ptr[0] = colorpalette[ coloridx ].rgbtRed;  // b->r
+                        ptr[1] = colorpalette[ coloridx ].rgbtGreen;// g->g
+                        ptr[2] = colorpalette[ coloridx ].rgbtBlue; // r->b
                         ptr[3] = 0xff;                          // alpha
                     }
                 }
@@ -127,7 +138,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                             case 16: {  // TRUE-COLOR BGR 16 BITS
                                 // read the current pixel
                                 unsigned char color;
-                                istringstream.read((char*)&color, sizeof(unsigned short));
+                                texbinstream.read((char*)&color, sizeof(unsigned short));
 
                                 // convert bgr (16 bits) pixel into rgba (32 bits) pixel
                                 ptr[0] = ((color & 0x7C00) >> 10) << 3;	// b->r
@@ -140,7 +151,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                             case 24: {  // TRUE-COLOR BGR 24 BITS
                                 // convert bgr (24 bits) pixel into rgba (32 bits) pixel
                                 RgbTriple pix;
-                                istringstream.read((char*)&pix, sizeof(RgbTriple));
+                                texbinstream.read((char*)&pix, sizeof(RgbTriple));
 
                                 ptr[0] = pix.rgbtRed;
                                 ptr[1] = pix.rgbtGreen;
@@ -152,7 +163,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                             case 32: {  // TRUE-COLOR BGR 32 BITS
                                 // convert bgr (32 bits) pixel into rgba (32 bits) pixel
                                 BgraQuad pix;
-                                istringstream.read((char*)&pix, sizeof(BgraQuad));
+                                texbinstream.read((char*)&pix, sizeof(BgraQuad));
 
                                 ptr[0] = pix.bgraRed;
                                 ptr[1] = pix.bgraGreen;
@@ -175,19 +186,19 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                         ptr = (unsigned char*)&(retTexInfo.mRgbaBuf[rowidx * tgaheader.is_width * 4]);
 
                     for(int col = 0; col < tgaheader.is_width; /* rien */ ) {
-                        istringstream.read((char*)&packetHeader, sizeof(unsigned char));
+                        texbinstream.read((char*)&packetHeader, sizeof(unsigned char));
                         packetSize = 1 + (packetHeader & 0x7f);
                         if( packetHeader & 0x80 ) {
                             // run-length packet
                             // read the current pixel
                             unsigned char coloridx;
-                            istringstream.read((char*)&coloridx, sizeof(unsigned char));
+                            texbinstream.read((char*)&coloridx, sizeof(unsigned char));
 
                             // convert indexed pixel (8 bits) pixel into rgba (32 bits) pixel
                             for(int lpi = 0; lpi < packetSize; lpi++, ptr += 4, col++ ) {
-                                ptr[0] = pPalette[ coloridx ].rgbtRed;     // b->r
-                                ptr[1] = pPalette[ coloridx ].rgbtGreen;   // g->g
-                                ptr[2] = pPalette[ coloridx ].rgbtBlue;    // r->b
+                                ptr[0] = colorpalette[ coloridx ].rgbtRed;     // b->r
+                                ptr[1] = colorpalette[ coloridx ].rgbtGreen;   // g->g
+                                ptr[2] = colorpalette[ coloridx ].rgbtBlue;    // r->b
                                 ptr[3] = 255;                           // alpha
                             }
                         }
@@ -196,12 +207,12 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                             for(int lpi = 0; lpi < packetSize; lpi++, ptr += 4, col++ ) {
                                 // read the current pixel
                                 unsigned char coloridx;
-                                istringstream.read((char*)&coloridx, sizeof(unsigned char));
+                                texbinstream.read((char*)&coloridx, sizeof(unsigned char));
 
                                 // convert indexed pixel (8 bits) pixel into rgba (32 bits) pixel
-                                ptr[0] = pPalette[ coloridx ].rgbtRed;		// b->r
-                                ptr[1] = pPalette[ coloridx ].rgbtGreen;	// g->g
-                                ptr[2] = pPalette[ coloridx ].rgbtBlue;		// r->b
+                                ptr[0] = colorpalette[ coloridx ].rgbtRed;		// b->r
+                                ptr[1] = colorpalette[ coloridx ].rgbtGreen;	// g->g
+                                ptr[2] = colorpalette[ coloridx ].rgbtBlue;		// r->b
                                 ptr[3] = 255;							// alpha
                             }
                         }
@@ -216,7 +227,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                         ptr = (unsigned char*)&(retTexInfo.mRgbaBuf[rowidx * tgaheader.is_width * 4]);
 
                     for(int colidx = 0; colidx < tgaheader.is_width; /* rien */ ) {
-                        istringstream.read((char*)&packetHeader, sizeof(unsigned char));
+                        texbinstream.read((char*)&packetHeader, sizeof(unsigned char));
                         packetSize		= 1 + (packetHeader & 0x7f);
                         if( packetHeader & 0x80 ) {
                             // run-length packet
@@ -224,7 +235,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                                 case 16: {  // RLE TRUE-COLOR BGR 16 BITS
                                     // read the current pixel
                                     unsigned short color;
-                                    istringstream.read((char*)&color, sizeof(unsigned short));
+                                    texbinstream.read((char*)&color, sizeof(unsigned short));
 
                                     // convert bgr (16 bits) pixel into rgba (32 bits) pixel
                                     for(int lpi = 0; lpi < packetSize; lpi++, ptr += 4, colidx++ ) {
@@ -239,7 +250,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                                 case 24: {  // RLE TRUE-COLOR BGR 24 BITS
                                     // convert bgr (24 bits) pixel into rgba (32 bits) pixel
                                     RgbTriple pix;
-                                    istringstream.read((char*)&pix, sizeof(RgbTriple));
+                                    texbinstream.read((char*)&pix, sizeof(RgbTriple));
 
                                     for(int lpi = 0; lpi < packetSize; lpi++, ptr += 4, colidx++ ) {
                                         ptr[0] = pix.rgbtRed;
@@ -253,7 +264,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                                 case 32: {  // RLE TRUE-COLOR BGR 32 BITS
                                     // convert bgr (32 bits) pixel into rgba (32 bits) pixel
                                     BgraQuad pix;
-                                    istringstream.read((char*)&pix, sizeof(BgraQuad));
+                                    texbinstream.read((char*)&pix, sizeof(BgraQuad));
 
                                     for(int lpi = 0; lpi < packetSize; lpi++, ptr += 4, colidx++ ) {
                                         ptr[0] = pix.bgraRed;
@@ -272,7 +283,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                                     case 16: {  // RLE TRUE-COLOR BGR 16 BITS
                                         // read the current pixel
                                         unsigned short color;
-                                        istringstream.read((char*)&color, sizeof(unsigned short));
+                                        texbinstream.read((char*)&color, sizeof(unsigned short));
 
                                         // convert bgr (16 bits) pixel into rgba (32 bits) pixel
                                         ptr[0] = ((color & 0x7C00) >> 10) << 3;	// b->r
@@ -286,7 +297,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                                     case 24: {  // RLE TRUE-COLOR BGR 24 BITS
                                         // convert bgr (24 bits) pixel into rgba (32 bits) pixel
                                         RgbTriple pix;
-                                        istringstream.read((char*)&pix, sizeof(RgbTriple));
+                                        texbinstream.read((char*)&pix, sizeof(RgbTriple));
 
                                         ptr[0] = pix.rgbtRed;
                                         ptr[1] = pix.rgbtGreen;
@@ -299,7 +310,7 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
                                     case 32: {  // RLE TRUE-COLOR BGR 32 BITS
                                         // convert bgr (32 bits) pixel into rgba (32 bits) pixel
                                         BgraQuad pix;
-                                        istringstream.read((char*)&pix, sizeof(BgraQuad));
+                                        texbinstream.read((char*)&pix, sizeof(BgraQuad));
 
                                         ptr[0] = pix.bgraRed;
                                         ptr[1] = pix.bgraGreen;
@@ -322,8 +333,28 @@ TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream) {
             }
         }
 
-        pPalette.reset();
+        colorpalette.reset();
+
+//      正常系の終了処理は、関数最後で実施
+//      /* OpenGLのTexture初期化 */
+//      auto[boolret, texid] = GlObj::TexInit(retTexInfo.mWidth, retTexInfo.mHeight, retTexInfo.mRgbaBuf);
+//      return retTexInfo;
     }
 
+    /* OpenGLのTexture初期化 */
+    auto[boolret, texid] = GlObj::TexInit(retTexInfo.mWidth, retTexInfo.mHeight, retTexInfo.mRgbaBuf.data());
+
+    if( !boolret) {
+        /* 初期化失敗 */
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "OpenGLのTexture初期化に失敗!!");
+        retTexInfo.mWidth = 0;
+        retTexInfo.mHeight = 0;
+        std::vector<char>().swap(retTexInfo.mRgbaBuf);
+        return retTexInfo;
+    }
+
+    /* 初期化成功!! */
+    std::vector<char>().swap(retTexInfo.mRgbaBuf);
+    retTexInfo.mTexId = texid;
     return retTexInfo;
 }

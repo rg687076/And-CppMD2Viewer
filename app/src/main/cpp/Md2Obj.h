@@ -94,11 +94,12 @@ public:
     std::vector<char>   md2bindata = {0};
     std::vector<char>   texbindata = {0};
     MdlData             mdldata = {0};
+    TexData             texdata = {0};
 
 public:
     ~Md2ModelInfo();
     bool loadModel();
-    bool loadSkin();
+    bool LoadTexture();
 };
 
 /* Md2モデルs */

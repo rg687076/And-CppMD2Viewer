@@ -2,6 +2,7 @@
 #define CPPMD2VIEWER_TEXOBJ_H
 
 #include <vector>
+#include <GLES2/gl2.h>
 
 enum class FileFormat : int {
     BMP = 0,
@@ -81,20 +82,24 @@ typedef struct BGRAQUAD {
     unsigned char	bgraAlpha;		// alpha
 } BgraQuad;
 
-class TexInfo {
+class TexData {
+public:
+    static TexData LoadTexture(FileFormat format, std::vector<char> &vector);
+
+public:
+    TexData() = default;
+    TexData(const TexData& ti) = default;
+    TexData(TexData&& ti) = default;
+    TexData& operator= (const TexData &ti) = default;
+    TexData& operator= (TexData &&ti) = default;
+
 public:
     int mWidth = 0;
     int mHeight= 0;
     std::vector<char> mRgbaBuf;
-
-public:
-    TexInfo() = default;
-    TexInfo(const TexInfo& ti) = default;
-    TexInfo(TexInfo&& ti) = default;
-    TexInfo& operator= ( const TexInfo &ti) = default;
-    TexInfo& operator= ( TexInfo &&ti) = default;
+    GLuint mTexId;
 };
 
-TexInfo LoadTexture(FileFormat ffmt, std::istringstream &istringstream);
+TexData LoadTexture(FileFormat ffmt, std::istringstream &istringstream);
 
 #endif //CPPMD2VIEWER_TEXOBJ_H

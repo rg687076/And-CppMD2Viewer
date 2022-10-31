@@ -3,6 +3,8 @@
 
 #include <map>
 #include <string>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 class ShaderInfo {
 public:
@@ -11,8 +13,12 @@ public:
     std::string content;
 };
 
+class GlObj {
+public:
+    /* Texture初期化 */
+    static std::tuple<bool, GLuint> TexInit(int width, int height, const char *rgbabindbuf);
+};
+
 /* Md2モデルs */
 extern std::map<std::string, ShaderInfo> gShaderInfo;
-/* OpenGL初期化 */
-extern void GlInit(std::map<std::string, ShaderInfo> &map);
 #endif //CPPMD2VIEWER_GLOBJ_H

@@ -19,7 +19,7 @@ bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
         std::vector<char>().swap(value.md2bindata);
         if( !ret) return false;
         /* テクスチャLoad */
-        bool ret2 = value.loadSkin();
+        bool ret2 = value.LoadTexture();
         std::vector<char>().swap(value.texbindata);
         if( !ret2) return false;
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2 and Texture LOADED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
@@ -70,9 +70,6 @@ bool Md2ModelInfo::loadModel() {
             pvertex[lpct2].v[0] = lframe->scale[0] * lframe->fp[lpct2].v[0] + lframe->translate[0];
             pvertex[lpct2].v[1] = lframe->scale[1] * lframe->fp[lpct2].v[1] + lframe->translate[1];
             pvertex[lpct2].v[2] = lframe->scale[2] * lframe->fp[lpct2].v[2] + lframe->translate[2];
-
-            if(lpct > (header->num_totalframes-5))
-                __android_log_print(ANDROID_LOG_INFO, "aaaaa", "pvertex[%d].v(%f,%f,%f) %s %s(%d)", lpct, pvertex[lpct2].v[0], pvertex[lpct2].v[0], pvertex[lpct2].v[0],  __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         }
     }
 
@@ -82,18 +79,12 @@ bool Md2ModelInfo::loadModel() {
     for (size_t lpct = 0; lpct < header->num_st; lpct++) {
         mdldata.st[lpct].s = static_cast<float>(sts[lpct].s) / static_cast<float>(header->skinwidth);
         mdldata.st[lpct].t = static_cast<float>(sts[lpct].t) / static_cast<float>(header->skinheight);
-
-        if(lpct > (header->num_st-5))
-            __android_log_print(ANDROID_LOG_INFO, "aaaaa", "mdldata.st[%d].st(%f,%f) %s %s(%d)", lpct, mdldata.st[lpct].s, mdldata.st[lpct].t, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     }
 
     /* mesh情報読込み */
     mdldata.polyIndex.resize(header->num_polys);
     mdldata.numPolys = header->num_polys;
     mesh *polyIndex = (mesh*)&md2bindata[header->offset_meshs];
-
-    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "header->num_polys=%d header->offsetMesh=%d %s %s(%d)", header->num_polys, header->offset_meshs, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-
     for (size_t lpct = 0; lpct < header->num_polys; lpct++) {
         mdldata.polyIndex[lpct].meshIndex[0] = polyIndex[lpct].meshIndex[0];
         mdldata.polyIndex[lpct].meshIndex[1] = polyIndex[lpct].meshIndex[1];
@@ -102,12 +93,6 @@ bool Md2ModelInfo::loadModel() {
         mdldata.polyIndex[lpct].stIndex[0] = polyIndex[lpct].stIndex[0];
         mdldata.polyIndex[lpct].stIndex[1] = polyIndex[lpct].stIndex[1];
         mdldata.polyIndex[lpct].stIndex[2] = polyIndex[lpct].stIndex[2];
-
-        if(lpct > (header->num_polys - 5))
-            __android_log_print(ANDROID_LOG_INFO, "aaaaa", "mdldata.polyIndex[%d].meshIndex(%d,%d,%d) mdldata.polyIndex[%d].stIndex(%d,%d,%d) %s %s(%d)",
-                                lpct, mdldata.polyIndex[lpct].meshIndex[0], mdldata.polyIndex[lpct].meshIndex[1], mdldata.polyIndex[lpct].meshIndex[2],
-                                lpct, mdldata.polyIndex[lpct].stIndex[0], mdldata.polyIndex[lpct].stIndex[0], mdldata.polyIndex[lpct].stIndex[0],
-                                __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     }
 
     /* アニメ関連情報初期化 */
@@ -121,7 +106,7 @@ bool Md2ModelInfo::loadModel() {
     return true;
 }
 
-bool Md2ModelInfo::loadSkin() {
+bool Md2ModelInfo::LoadTexture() {
     /* Textureファイルのパース */
     std::istringstream texbinstream(std::string(texbindata.begin(), texbindata.end()));
     /* フォーマットチェック(BMP) */
@@ -129,12 +114,13 @@ bool Md2ModelInfo::loadSkin() {
     texbinstream.read(bm, sizeof(bm));
     if(bm[0]=='B' && bm[1]=='M') {
         /* BMP形式確定 */
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", " BMP形式(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-//        texinfo = LoadTexture(FileFormat::BMP, texbinstream);
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "BMP形式(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        texdata = TexData::LoadTexture(FileFormat::BMP, texbindata);
         return true;
     }
     else {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", " BMP形式ではない(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "BMP形式ではない(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+//        return false;   /* TGAの可能性がある */
     }
 
     /* フォーマットチェック(TGA) */
@@ -144,11 +130,12 @@ bool Md2ModelInfo::loadSkin() {
     if(std::string(TRUEVISION_TARGA).find("TRUEVISION-") == 0) {
         /* TGA形式確定 */
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", " TGA形式(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-//        texinfo = LoadTexture(FileFormat::TGA, texbinstream);
+        texdata = TexData::LoadTexture(FileFormat::TGA, texbindata);
         return true;
     }
     else {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", " TGA形式ではない(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+//        return false;   /* 他の形式の可能性がある */
     }
 
     return false;
