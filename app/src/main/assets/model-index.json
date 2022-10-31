@@ -8,8 +8,8 @@
 		{ "name": "paper", "vertex": "obj2.md2", "tex": "obj2.tga"}
 	],
 	"shaders": [
-		{ "basic.frag" : "shaders/basic.frag" },
-		{ "basic.vert" : "shaders/basic.vert" }
+		{ "basic.frag" : "shaders/basic.fsh" },
+		{ "basic.vert" : "shaders/basic.vsh" }
 	],
 	"//": [
 		{ "colorfsh"  : "shaders/color.fsh"  },
