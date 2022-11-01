@@ -5,6 +5,7 @@
 #include "Md2Parts.h"
 #include "Md2Obj.h"
 #include "TexObj.h"
+#include "GlObj.h"
 
 /* Md2モデルデータ実体 */
 std::map<std::string, Md2ModelInfo> gMd2models;
@@ -14,7 +15,7 @@ bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
     for(auto &[key, value] : gMd2models) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model losd start (%s). %s %s(%d)", value.mName.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model load start (%s). %s %s(%d)", value.mName.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         /* MD2モデルLoad */
         bool ret = value.LoadModel();
         std::vector<char>().swap(value.mWkMd2BinData);
@@ -123,11 +124,26 @@ bool Md2ModelInfo::LoadTexture() {
 
 bool Md2ModelInfo::LoadShaders() {
     /* シェーダ読込み */
-    bool ret = mShaderObj.LoadShaders(mWkVshStrData, mWkFshStrData);
-    if( !ret) return false;
+    auto[retboot, progid] = GlObj::LoadShaders(mWkVshStrData, mWkFshStrData);
+    if( !retboot) {
+        mProgramId = -1;
+        return false;
+    }
+    mProgramId = progid;
 
     /* シェーダのAttributeにデータ一括設定 */
-    return mShaderObj.setAttribute(mShaderObj.mProgramId, mMdlData.numTotalFrames,
-                                   mMdlData.numPolys, mMdlData.numVertexsPerFrame,
-                                   mMdlData.vertexList, mMdlData.polyIndex, mMdlData.st);
+    auto[retbool, retAnimFrameS2e, retVbo, retCurPosAttrib, retNextPosAttrib, retTexCoordAttrib] = GlObj::setAttribute(mProgramId, mMdlData.numTotalFrames, mMdlData.vertexList, mMdlData.polyIndex, mMdlData.st);
+    if( !retbool) {
+        GlObj::DeleteShaders(mProgramId);
+        mProgramId =-1;
+        return false;
+    }
+
+    mFrameIndices  = std::move(retAnimFrameS2e);
+    mVbo           = retVbo;
+    mCurPosAttrib  = retCurPosAttrib;
+    mNextPosAttrib = retNextPosAttrib;
+    mTexCoordAttrib= retTexCoordAttrib;
+
+    return true;
 }

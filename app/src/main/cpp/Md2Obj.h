@@ -8,12 +8,9 @@
 #include <GLES2/gl2.h>
 #include "Md2Parts.h"
 #include "TexObj.h"
-#include "ShaderObj.h"
 
 #define MD2_IDENT   (('2'<<24) + ('P'<<16) + ('D'<<8) + 'I')    /* magic number "IDP2" or 844121161 */
 #define	MD2_VERSION 8                                           /* model version */
-
-using mapFrameIndexes = std::unordered_map<int, std::pair<int, int>>;
 
 struct MdlData {
     int numTotalFrames;
@@ -43,17 +40,22 @@ public:
     std::string         mWkVshStrData = {0};
     std::string         mWkFshStrData = {0};
     MdlData             mMdlData = {0};
-    GLuint              mTexId = -1;
-    ShaderObj           mShaderObj = {};
+    /* アニメ関連 */
+    std::unordered_map<int, std::pair<int, int>> mFrameIndices = {};
+    /* テクスチャ関連 */
+    GLuint mTexId = -1;
+    /* シェーダー関連 */
+    GLuint mVbo           = -1;
+    GLuint mProgramId     = -1;
+    GLuint mCurPosAttrib  = -1;
+    GLuint mNextPosAttrib = -1;
+    GLuint mTexCoordAttrib= -1;
 
 public:
     ~Md2ModelInfo();
     bool LoadModel();
     bool LoadTexture();
     bool LoadShaders();
-
-//private:
-//    mapFrameIndexes mFrameIndices = {};
 };
 
 /* Md2モデルs */

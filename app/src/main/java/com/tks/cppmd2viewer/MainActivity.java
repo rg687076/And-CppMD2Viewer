@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
             texfilenames[lpct] = item.getValue().texfilename;
             vshfilenames[lpct] = item.getValue().vshfilename;
             fshfilenames[lpct] = item.getValue().fshfilename;
+            lpct++;
         }
         Jni.onStart(getResources().getAssets(), modelnames, md2filenames, texfilenames, vshfilenames, fshfilenames);
     }

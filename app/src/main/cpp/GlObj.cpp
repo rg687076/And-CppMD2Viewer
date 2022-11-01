@@ -1,7 +1,10 @@
-#include "GlObj.h"
+#include <vector>
+#include <unordered_map>
+#include <android/log.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include <android/log.h>
+#include "Md2Parts.h"
+#include "GlObj.h"
 
 /* OpenGLのTexture初期化 */
 std::tuple<bool, GLuint>  GlObj::TexInit(int width, int height, const char *rgbabindbuf) {
@@ -32,7 +35,7 @@ std::tuple<bool, GLuint>  GlObj::TexInit(int width, int height, const char *rgba
     return {true, texid};
 }
 
-std::tuple<bool, GLuint>  GlObj::LoadShaders(const std::string &vshstrdata, const std::string &fshstrdata) {
+std::tuple<bool, GLuint> GlObj::LoadShaders(const std::string &vshstrdata, const std::string &fshstrdata) {
     const GLchar *vsSourcePtr = vshstrdata.c_str();
     const GLchar *fsSourcePtr = fshstrdata.c_str();
 
@@ -88,6 +91,10 @@ std::tuple<bool, GLuint>  GlObj::LoadShaders(const std::string &vshstrdata, cons
     return {true, retProgramId};
 }
 
+void GlObj::DeleteShaders(GLuint programId) {
+    glDeleteProgram(programId);
+}
+
 /* コンパイル結果判定 */
 bool GlObj::CheckCompileErrors(GLuint id, EShaderType type) {
     int isCompiled = 0;
@@ -132,4 +139,86 @@ bool GlObj::CheckLinkError(GLuint programId) {
     }
 
     return false;
+}
+
+/* シェーダのAttribute属性一括設定 */
+RetShaderAttribs GlObj::setAttribute(GLuint programId, int totalframes,
+                                     const std::vector<vertex> &vertexs, const std::vector<mesh> &polyIndexs,const std::vector<texstcoord> &sts) {
+    /* 返却値 */
+    std::unordered_map<int, std::pair<int, int>> retAnimFrameS2e;
+    GLuint retVbo = -1;
+    GLuint retCurPosAttrib   = glGetAttribLocation( programId, "pos");
+    GLuint retNextPosAttrib  = glGetAttribLocation( programId, "nextPos");
+    GLuint retTexCoordAttrib = glGetAttribLocation( programId, "texCoord");
+
+    /* 初期知設定 */
+    std::vector<float> wkMd2Vertices = {0};
+    const size_t numPolys           = polyIndexs.size();
+    const size_t numVertexsperframe = vertexs.size() / totalframes;
+
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "endFrame=%d numPoly=%d numVertexsperframe=%d %s %s(%d)", totalframes, numPolys, numVertexsperframe, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+//    2022-11-01 20:30:26.843 27392-27431/org.raydelto.md2loader I/aaaaa: endFrame=197 numPoly=592 numVertexsperframe=312 void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(100)
+//    2022-11-01 20:30:27.120 27392-27431/org.raydelto.md2loader I/aaaaa: count=1776 (m_frameIndices[frameIndex].first * 8)=0  void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(144)
+//    2022-11-01 20:30:27.170 27392-27431/org.raydelto.md2loader I/aaaaa: endFrame=197 numPoly=590 numVertexsperframe=315 void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(100)
+//    2022-11-01 20:30:27.435 27392-27431/org.raydelto.md2loader I/aaaaa: count=1770 (m_frameIndices[frameIndex].first * 8)=0  void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(144)
+
+    /* 現在頂点,次頂点,UV座標で詰替え */
+    for(int frameidx = 0; frameidx < totalframes; frameidx++) {
+        /* 現在フレームと次フレームを取得 */
+        const vertex *currentFrame= &vertexs[numVertexsperframe * frameidx];
+        const vertex *nextFrame   = (frameidx+1 >= totalframes) ? &vertexs[0] : &vertexs[numVertexsperframe * (frameidx+1)];
+
+        for(int plyidx = 0; plyidx < numPolys; plyidx++) {
+            for(int meshdx = 0; meshdx < 3; meshdx++) {
+                /* vertices */
+                for (size_t vidx = 0; vidx < 3; vidx++) {
+                    wkMd2Vertices.emplace_back(currentFrame[polyIndexs[plyidx].meshIndex[meshdx]].v[vidx]);
+                }
+
+                /* next frame */
+                for (size_t vidx = 0; vidx < 3; vidx++) {
+                    // vertices
+                    wkMd2Vertices.emplace_back(nextFrame[polyIndexs[plyidx].meshIndex[meshdx]].v[vidx]);
+                }
+
+                /* tex coords */
+                wkMd2Vertices.emplace_back(sts[polyIndexs[plyidx].stIndex[meshdx]].s);
+                wkMd2Vertices.emplace_back(sts[polyIndexs[plyidx].stIndex[meshdx]].t);
+            }
+        }
+
+        int startverindex= (frameidx==0) ? 0 : retAnimFrameS2e[frameidx-1].second + 1;
+        int endverindex  = numPolys * 3 - 1;
+        retAnimFrameS2e[frameidx] = {startverindex, endverindex};
+    }
+
+    /* TODO 削除予定 */
+    for(auto [key, val] : retAnimFrameS2e) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "m_frameIndices[%d]={sv:%d, ev:%d}", key, val.first, val.second);
+//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[197]={sv:349872, ev:351647}
+//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[196]={sv:348096, ev:349871}
+//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[195]={sv:346320, ev:348095}
+//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[194]={sv:344544, ev:346319}
+//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[2]={sv:3552, ev:5327}
+//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[1]={sv:1776, ev:3551}
+//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[0]={sv:0, ev:1775}
+    }
+
+    size_t numVertexs = numPolys * 3 + 1;
+    glGenBuffers(1, &retVbo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, retVbo);
+    glBufferData(GL_ARRAY_BUFFER, numVertexs * sizeof(float) * 8 * totalframes, &wkMd2Vertices[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(retCurPosAttrib  , 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)nullptr);
+    glVertexAttribPointer(retNextPosAttrib , 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(retTexCoordAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(6 * sizeof(GLfloat)));
+
+    glEnableVertexAttribArray(retCurPosAttrib);
+    glEnableVertexAttribArray(retNextPosAttrib);
+    glEnableVertexAttribArray(retTexCoordAttrib);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    return {true, retAnimFrameS2e, retVbo, retCurPosAttrib, retNextPosAttrib, retTexCoordAttrib};
 }

@@ -57,5 +57,4 @@ struct frame {
     framePoint_t fp[1];
 };
 
-
 #endif //CPPMD2VIEWER_MD2PARTS_H

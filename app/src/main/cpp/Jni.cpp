@@ -51,7 +51,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
                                                                      {texfilenamechar, std::vector<char>()},
                                                                      {vshfilenamechar, std::vector<char>()},
                                                                      {fshfilenamechar, std::vector<char>()}};
-        for(std::pair<std::string, std::vector<char>> item : wk) {
+        for(std::pair<std::string, std::vector<char>> &item : wk) {
             const std::string &filename = item.first;
             std::vector<char> &binbuf = item.second;
 
@@ -74,8 +74,8 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
                                                         .mWkMd2BinData=std::move(wk[0].second),
                                                         .mWkTexBinData=std::move(wk[1].second),
                                                         /* shaderはデータを文字列に変換して格納 */
-                                                        .mWkVshStrData=std::string(wk[1].second.begin(), wk[1].second.end()),
-                                                        .mWkFshStrData=std::string(wk[2].second.begin(), wk[2].second.end())});
+                                                        .mWkVshStrData=std::string(wk[2].second.begin(), wk[2].second.end()),
+                                                        .mWkFshStrData=std::string(wk[3].second.begin(), wk[3].second.end())});
 
         /* char解放 */
         env->ReleaseStringUTFChars(modelnamejstr  , modelnamechar);
