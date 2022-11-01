@@ -4,11 +4,6 @@
 #include <vector>
 #include <GLES2/gl2.h>
 
-enum class FileFormat : int {
-    BMP = 0,
-    TGA,
-};
-
 #pragma pack(2)
 typedef struct BITMAPFILEHEADER {
     char    bm[2];      /* "BM" */
@@ -85,6 +80,8 @@ typedef struct BGRAQUAD {
 class TexObj {
 public:
     static std::tuple<bool, GLuint> LoadTexture(std::vector<char> &texbindata);
+
+private:
     static std::tuple<int/*幅*/, int/*高さ*/, std::vector<char>/*RGBA*/> LoadTextureFromBmp(std::vector<char> &texbindata);
     static std::tuple<int/*幅*/, int/*高さ*/, std::vector<char>/*RGBA*/> LoadTextureFromTga(std::vector<char> &texbindata);
 };

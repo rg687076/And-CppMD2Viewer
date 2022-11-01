@@ -70,12 +70,12 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         }
 
         /* Md2model追加 */
-        gMd2models.emplace(modelnamechar, Md2ModelInfo{ .name=modelnamechar,
-                                                        .md2bindata=std::move(wk[0].second),
-                                                        .texbindata=std::move(wk[1].second),
+        gMd2models.emplace(modelnamechar, Md2ModelInfo{ .mName=modelnamechar,
+                                                        .mWkMd2BinData=std::move(wk[0].second),
+                                                        .mWkTexBinData=std::move(wk[1].second),
                                                         /* shaderはデータを文字列に変換して格納 */
-                                                        .vshstrdata=std::string(wk[1].second.begin(), wk[1].second.end()),
-                                                        .fshstrdata=std::string(wk[2].second.begin(), wk[2].second.end())});
+                                                        .mWkVshStrData=std::string(wk[1].second.begin(), wk[1].second.end()),
+                                                        .mWkFshStrData=std::string(wk[2].second.begin(), wk[2].second.end())});
 
         /* char解放 */
         env->ReleaseStringUTFChars(modelnamejstr  , modelnamechar);
