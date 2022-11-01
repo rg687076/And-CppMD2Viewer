@@ -1,15 +1,11 @@
 {
 	"md2models": [
-		{ "name": "female", "vertex": "female.md2", "tex": "female.tga"},
-		{ "name": "grunt" , "vertex": "grunt.md2" , "tex": "grunt.tga"}
+		{ "name": "female", "vertex": "female.md2", "tex": "female.tga", "fsh": "shaders/basic.fsh", "vsh": "shaders/basic.vsh"},
+		{ "name": "grunt" , "vertex": "grunt.md2" , "tex": "grunt.tga" , "fsh": "shaders/basic.fsh", "vsh": "shaders/basic.vsh"}
 	],
 	"//": [
 		{ "name": "frog" , "vertex": "obj1.md2", "tex": "obj1.tga"},
 		{ "name": "paper", "vertex": "obj2.md2", "tex": "obj2.tga"}
-	],
-	"shaders": [
-		{ "basic.frag" : "shaders/basic.fsh" },
-		{ "basic.vert" : "shaders/basic.vsh" }
 	],
 	"//": [
 		{ "colorfsh"  : "shaders/color.fsh"  },

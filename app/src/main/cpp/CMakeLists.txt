@@ -9,4 +9,5 @@ add_library(globj SHARED GlObj.cpp)
 find_library(log-lib log)
 
 target_link_libraries(jni ${log-lib} android md2model globj)
-target_link_libraries(md2model ${log-lib})
+target_link_libraries(md2model ${log-lib} globj)
+target_link_libraries(globj ${log-lib} EGL GLESv2)

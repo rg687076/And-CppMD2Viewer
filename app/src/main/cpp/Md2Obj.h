@@ -89,12 +89,12 @@ struct MdlData {
 class Md2ModelInfo {
 public:
     std::string         name = {0};
-    std::string         verfilename = {0};
-    std::string         texfilename = {0};
     std::vector<char>   md2bindata = {0};
     std::vector<char>   texbindata = {0};
+    std::string         vshstrdata = {0};
+    std::string         fshstrdata = {0};
     MdlData             mdldata = {0};
-    TexData             texdata = {0};
+    GLuint              mTexId = 0xffffffff;
 
 public:
     ~Md2ModelInfo();

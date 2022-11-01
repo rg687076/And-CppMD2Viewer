@@ -82,24 +82,11 @@ typedef struct BGRAQUAD {
     unsigned char	bgraAlpha;		// alpha
 } BgraQuad;
 
-class TexData {
+class TexObj {
 public:
-    static TexData LoadTexture(FileFormat format, std::vector<char> &vector);
-
-public:
-    TexData() = default;
-    TexData(const TexData& ti) = default;
-    TexData(TexData&& ti) = default;
-    TexData& operator= (const TexData &ti) = default;
-    TexData& operator= (TexData &&ti) = default;
-
-public:
-    int mWidth = 0;
-    int mHeight= 0;
-    std::vector<char> mRgbaBuf;
-    GLuint mTexId;
+    static std::tuple<bool, GLuint> LoadTexture(std::vector<char> &texbindata);
+    static std::tuple<int/*幅*/, int/*高さ*/, std::vector<char>/*RGBA*/> LoadTextureFromBmp(std::vector<char> &texbindata);
+    static std::tuple<int/*幅*/, int/*高さ*/, std::vector<char>/*RGBA*/> LoadTextureFromTga(std::vector<char> &texbindata);
 };
-
-TexData LoadTexture(FileFormat ffmt, std::istringstream &istringstream);
 
 #endif //CPPMD2VIEWER_TEXOBJ_H

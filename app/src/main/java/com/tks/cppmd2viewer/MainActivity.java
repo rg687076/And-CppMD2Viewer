@@ -18,9 +18,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -67,8 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
         /* モデルindexs */
         HashMap<String, ModelIndex> md2modelindex = new HashMap<>();
-        /* シェーダindexs */
-        HashMap<String, String> shaderindex = new HashMap<>();
 
         /* モデルindexファイルs(model-index.json)を取得 */
         try {
@@ -86,17 +82,12 @@ public class MainActivity extends AppCompatActivity {
             for(int lpct = 0; lpct < jsonarray.length(); lpct++) {
                 JSONObject md2model = jsonarray.getJSONObject(lpct);
                 ModelIndex mi = new ModelIndex() {{ modelname=md2model.getString("name");
-                                                    vertexfilename=md2model.getString("vertex");
-                                                    texfilename=md2model.getString("tex");}};
+                                                    md2filename =md2model.getString("vertex");
+                                                    texfilename=md2model.getString("tex");
+                                                    vshfilename=md2model.getString("vsh");
+                                                    fshfilename=md2model.getString("fsh");}};
                 mDrwModel.add(mi.modelname);
                 md2modelindex.put(md2model.getString("name"), mi);
-            }
-            /* jsonパース(shaderファイル) */
-            JSONArray shaderjsonarray = jsonObject.getJSONArray("shaders");
-            for(int lpct = 0; lpct < shaderjsonarray.length(); lpct++) {
-                JSONObject shaderinfo = shaderjsonarray.getJSONObject(lpct);
-                String key = shaderinfo.keys().next();
-                shaderindex.put(key  , shaderinfo.getString(key));
             }
         }
         catch(IOException | JSONException e) {
@@ -107,18 +98,23 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("aaaaa", "model数=" + md2modelindex.size());
         for (Map.Entry<String, ModelIndex> item : md2modelindex.entrySet())
-            System.out.println(item.getKey() + " => " + item.getValue().vertexfilename + " : " + item.getValue().texfilename);
-        Log.d("aaaaa", "shader数=" + shaderindex.size());
-        for (Map.Entry<String, String> item : shaderindex.entrySet())
-            System.out.println(item.getKey() + " => " + item.getValue());
+            System.out.println(item.getKey() + " => " + item.getValue().md2filename + " : " + item.getValue().texfilename + " : " + item.getValue().vshfilename + " : " + item.getValue().fshfilename);
 
         /* cpp側 初期化 */
-        String[] modelnames = md2modelindex.keySet().toArray(new String[0]);
-        String[] vertexnames= md2modelindex.values().stream().map(mi -> { return mi.vertexfilename;}).toArray(String[]::new);
-        String[] texnames   = md2modelindex.values().stream().map(mi -> { return mi.texfilename;}).toArray(String[]::new);
-        String[] shaderkeys = shaderindex.keySet().toArray(new String[0]);
-        String[] shaderfiles= shaderindex.values().toArray(new String[0]);
-        Jni.onStart(getResources().getAssets(), modelnames, vertexnames, texnames, shaderkeys, shaderfiles);
+        String[] modelnames   = new String[md2modelindex.size()];
+        String[] md2filenames = new String[md2modelindex.size()];
+        String[] texfilenames = new String[md2modelindex.size()];
+        String[] vshfilenames = new String[md2modelindex.size()];
+        String[] fshfilenames = new String[md2modelindex.size()];
+        int lpct = 0;
+        for(Map.Entry<String, ModelIndex> item : md2modelindex.entrySet()) {
+            modelnames  [lpct] = item.getKey();
+            md2filenames[lpct] = item.getValue().md2filename;
+            texfilenames[lpct] = item.getValue().texfilename;
+            vshfilenames[lpct] = item.getValue().vshfilename;
+            fshfilenames[lpct] = item.getValue().fshfilename;
+        }
+        Jni.onStart(getResources().getAssets(), modelnames, md2filenames, texfilenames, vshfilenames, fshfilenames);
     }
 
     @Override
@@ -130,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
 
 class ModelIndex {
     public String modelname;
-    public String vertexfilename;
+    public String md2filename;
     public String texfilename;
+    public String vshfilename;
+    public String fshfilename;
 }

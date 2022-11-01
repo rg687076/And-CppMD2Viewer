@@ -22,7 +22,7 @@ bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
         bool ret2 = value.LoadTexture();
         std::vector<char>().swap(value.texbindata);
         if( !ret2) return false;
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2 and Texture LOADED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model and Texture LOADED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     }
 
     return true;
@@ -107,36 +107,11 @@ bool Md2ModelInfo::loadModel() {
 }
 
 bool Md2ModelInfo::LoadTexture() {
-    /* Textureファイルのパース */
-    std::istringstream texbinstream(std::string(texbindata.begin(), texbindata.end()));
-    /* フォーマットチェック(BMP) */
-    char bm[2] = {0};
-    texbinstream.read(bm, sizeof(bm));
-    if(bm[0]=='B' && bm[1]=='M') {
-        /* BMP形式確定 */
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "BMP形式(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-        texdata = TexData::LoadTexture(FileFormat::BMP, texbindata);
-        return true;
-    }
-    else {
-        __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "BMP形式ではない(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-//        return false;   /* TGAの可能性がある */
-    }
+    auto [retbool, texid] = TexObj::LoadTexture(texbindata);
+    if(retbool)
+        mTexId = texid;
+    else
+        mTexId = -1;
 
-    /* フォーマットチェック(TGA) */
-    texbinstream.seekg(-18, std::ios::end );
-    char TRUEVISION_TARGA[18] = {0};
-    texbinstream.read(TRUEVISION_TARGA, sizeof(TRUEVISION_TARGA));
-    if(std::string(TRUEVISION_TARGA).find("TRUEVISION-") == 0) {
-        /* TGA形式確定 */
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", " TGA形式(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-        texdata = TexData::LoadTexture(FileFormat::TGA, texbindata);
-        return true;
-    }
-    else {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", " TGA形式ではない(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-//        return false;   /* 他の形式の可能性がある */
-    }
-
-    return false;
+    return retbool;
 }

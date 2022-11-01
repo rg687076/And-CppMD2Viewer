@@ -12,20 +12,14 @@ extern "C" {
 #endif
 
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
-                                                                 jobjectArray modelnames, jobjectArray vertexnames, jobjectArray texnames,
-                                                                 jobjectArray shaderkeys, jobjectArray shaderfiles) {
+                                                                 jobjectArray modelnames, jobjectArray md2filenames, jobjectArray texfilenames,
+                                                                 jobjectArray vshfilenames, jobjectArray fshfilenames) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
     /* 引数チェック(md2model) */
-    jsize size0 = env->GetArrayLength(modelnames), size1 = env->GetArrayLength(vertexnames), size2 = env->GetArrayLength(texnames);
-    if(size0 != size1 || size0 != size2) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "引数不正 名称リスト数が合わない!!! modelname.size=%d vertexnames.size=%d texnames.size=%d %s %s(%d)", size0, size1, size2, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-        return false;
-    }
-    /* 引数チェック(shader) */
-    jsize size00 = env->GetArrayLength(shaderkeys), size01 = env->GetArrayLength(shaderfiles);
-    if(size00 != size01) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "引数不正 名称リスト数が合わない!!! shaderkeys.size=%d shaderfiles.size=%d %s %s(%d)", size00, size01, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    jsize size0 = env->GetArrayLength(modelnames), size1 = env->GetArrayLength(md2filenames), size2 = env->GetArrayLength(texfilenames), size3 = env->GetArrayLength(vshfilenames), size4 = env->GetArrayLength(fshfilenames);
+    if(size0 != size1 || size0 != size2 || size0 != size3 || size0 != size4) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "引数不正 名称リストの数が合わない!!! modelname.size=%d md2filenames.size=%d texfilenames.size=%d vshfilenames.size=%d fshfilenames.size=%d %s %s(%d)", size0, size1, size2, size3, size4, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
 
@@ -36,97 +30,66 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         return false;
     }
 
-    /* モデル名,頂点ファイル名,Texファイル名,頂点ファイル中身,Texファイル中身 取得 */
+    /* モデル名,頂点ファイル名,Texファイル名,頂点ファイル中身,Texファイル中身,vshファイルの中身,fshのファイルの中身 取得 */
     for(int lpct = 0; lpct < size0; lpct++) {
         /* jobjectArray -> jstring */
-        jstring modelfilenamejstr= (jstring)env->GetObjectArrayElement(modelnames, lpct);
-        jstring verfilenamejstr  = (jstring)env->GetObjectArrayElement(vertexnames, lpct);
-        jstring texfilenamejstr  = (jstring)env->GetObjectArrayElement(texnames, lpct);
+        jstring modelnamejstr   = (jstring)env->GetObjectArrayElement(modelnames  , lpct);
+        jstring md2filenamejstr = (jstring)env->GetObjectArrayElement(md2filenames, lpct);
+        jstring texfilenamejstr = (jstring)env->GetObjectArrayElement(texfilenames, lpct);
+        jstring vshfilenamejstr = (jstring)env->GetObjectArrayElement(vshfilenames, lpct);
+        jstring fshfilenamejstr = (jstring)env->GetObjectArrayElement(fshfilenames, lpct);
 
         /* jstring -> char */
-        const char *modelfilenamechar= env->GetStringUTFChars(modelfilenamejstr, nullptr);
-        const char *verfilenamechar  = env->GetStringUTFChars(verfilenamejstr, nullptr);
-        const char *texfilenamechar  = env->GetStringUTFChars(texfilenamejstr, nullptr);
+        const char *modelnamechar   = env->GetStringUTFChars(modelnamejstr  , nullptr);
+        const char *md2filenamechar = env->GetStringUTFChars(md2filenamejstr, nullptr);
+        const char *texfilenamechar = env->GetStringUTFChars(texfilenamejstr, nullptr);
+        const char *vshfilenamechar = env->GetStringUTFChars(vshfilenamejstr, nullptr);
+        const char *fshfilenamechar = env->GetStringUTFChars(fshfilenamejstr, nullptr);
 
-        /* md2データ一括読込み */
-        /* AAsset::open */
-        AAsset *verAssetFile = AAssetManager_open(assetMgr, verfilenamechar, AASSET_MODE_RANDOM);
-        if (verAssetFile == nullptr) {
-            __android_log_print(ANDROID_LOG_INFO, "aaaaa", "ERROR AAssetManager_open(%s) %s %s(%d)", verfilenamechar, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-            return false;
-        }
-        /* 読込 */
-        int versize = AAsset_getLength(verAssetFile);
-        std::vector<char> verbuf(versize);
-        AAsset_read(verAssetFile, verbuf.data(), versize);
-        /* AAsset::close */
-        AAsset_close(verAssetFile);
+        /* md2関連データ一括読込み */
+        std::vector<std::pair<std::string, std::vector<char>>> wk = {{md2filenamechar, std::vector<char>()},
+                                                                     {texfilenamechar, std::vector<char>()},
+                                                                     {vshfilenamechar, std::vector<char>()},
+                                                                     {fshfilenamechar, std::vector<char>()}};
+        for(std::pair<std::string, std::vector<char>> item : wk) {
+            const std::string &filename = item.first;
+            std::vector<char> &binbuf = item.second;
 
-        /* Texデータ一括読込み */
-        /* AAsset::open */
-        AAsset *texAssetFile = AAssetManager_open(assetMgr, texfilenamechar, AASSET_MODE_RANDOM);
-        if (texAssetFile == nullptr) {
-            __android_log_print(ANDROID_LOG_INFO, "aaaaa", "ERROR AAssetManager_open(%s) %s %s(%d)", texfilenamechar, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-            return false;
+            /* AAsset::open */
+            AAsset *assetFile = AAssetManager_open(assetMgr, filename.c_str(), AASSET_MODE_RANDOM);
+            if (assetFile == nullptr) {
+                __android_log_print(ANDROID_LOG_INFO, "aaaaa", "ERROR AAssetManager_open(%s) %s %s(%d)", filename.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+                return false;
+            }
+            /* 読込 */
+            int size = AAsset_getLength(assetFile);
+            binbuf.resize(size);
+            AAsset_read(assetFile, binbuf.data(), size);
+            /* AAsset::close */
+            AAsset_close(assetFile);
         }
-        /* 読込 */
-        int texsize = AAsset_getLength(texAssetFile);
-        std::vector<char> texbuf(texsize);
-        AAsset_read(texAssetFile, texbuf.data(), texsize);
-        /* AAsset::close */
-        AAsset_close(texAssetFile);
 
         /* Md2model追加 */
-        gMd2models.emplace(modelfilenamechar, Md2ModelInfo{ .name=modelfilenamechar, .verfilename=verfilenamechar, .texfilename=texfilenamechar,
-                                                       .md2bindata=std::move(verbuf), .texbindata=std::move(texbuf)});
+        gMd2models.emplace(modelnamechar, Md2ModelInfo{ .name=modelnamechar,
+                                                        .md2bindata=std::move(wk[0].second),
+                                                        .texbindata=std::move(wk[1].second),
+                                                        /* shaderはデータを文字列に変換して格納 */
+                                                        .vshstrdata=std::string(wk[1].second.begin(), wk[1].second.end()),
+                                                        .fshstrdata=std::string(wk[2].second.begin(), wk[2].second.end())});
+
         /* char解放 */
-        env->ReleaseStringUTFChars(modelfilenamejstr, modelfilenamechar);
-        env->ReleaseStringUTFChars(verfilenamejstr, verfilenamechar);
+        env->ReleaseStringUTFChars(modelnamejstr  , modelnamechar);
+        env->ReleaseStringUTFChars(md2filenamejstr, md2filenamechar);
         env->ReleaseStringUTFChars(texfilenamejstr, texfilenamechar);
+        env->ReleaseStringUTFChars(vshfilenamejstr, vshfilenamechar);
+        env->ReleaseStringUTFChars(fshfilenamejstr, fshfilenamechar);
 
         /* jstring解放 */
-        env->DeleteLocalRef(modelfilenamejstr);
-        env->DeleteLocalRef(verfilenamejstr);
+        env->DeleteLocalRef(modelnamejstr);
+        env->DeleteLocalRef(md2filenamejstr);
         env->DeleteLocalRef(texfilenamejstr);
-    }
-
-    /* shaderキー,shaderファイル中身 取得 */
-    for(int lpct = 0; lpct < size00; lpct++) {
-        /* jobjectArray -> jstring */
-        jstring shaderkeyjstr  = (jstring)env->GetObjectArrayElement(shaderkeys, lpct);
-        jstring shaderfnamejstr= (jstring)env->GetObjectArrayElement(shaderfiles, lpct);
-
-        /* jstring -> char */
-        const char *shaderkeychar  = env->GetStringUTFChars(shaderkeyjstr, nullptr);
-        const char *shaderfnamechar= env->GetStringUTFChars(shaderfnamejstr, nullptr);
-
-        /* shaderファイル一括読込み */
-        /* AAsset::open */
-        AAsset *shadercontent = AAssetManager_open(assetMgr, shaderfnamechar, AASSET_MODE_RANDOM);
-        if (shadercontent == nullptr) {
-            __android_log_print(ANDROID_LOG_INFO, "aaaaa", "ERROR AAssetManager_open(%s) %s %s(%d)", shaderfnamechar, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-            return false;
-        }
-        /* 読込 */
-        int versize = AAsset_getLength(shadercontent);
-        std::vector<char> shadercontentbuf(versize);
-        AAsset_read(shadercontent, shadercontentbuf.data(), versize);
-        /* AAsset::close */
-        AAsset_close(shadercontent);
-
-        /* shaderコンテンツを文字列に変換 */
-        std::string shadercotentstr(shadercontentbuf.begin(), shadercontentbuf.end());
-
-        /* ShaderInfo追加 */
-        gShaderInfo.emplace(shaderkeychar, ShaderInfo{ .name=shaderkeychar, .filename=shaderfnamechar, .content=shadercotentstr});
-
-        /* char解放 */
-        env->ReleaseStringUTFChars(shaderkeyjstr, shaderkeychar);
-        env->ReleaseStringUTFChars(shaderfnamejstr, shaderfnamechar);
-
-        /* jstring解放 */
-        env->DeleteLocalRef(shaderkeyjstr);
-        env->DeleteLocalRef(shaderfnamejstr);
+        env->DeleteLocalRef(vshfilenamejstr);
+        env->DeleteLocalRef(fshfilenamejstr);
     }
 
     /* 初期化 */

@@ -1,10 +1,10 @@
 #include "GlObj.h"
-
-std::map<std::string, ShaderInfo> gShaderInfo;
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 /* OpenGLのTexture初期化 */
 std::tuple<bool, GLuint>  GlObj::TexInit(int width, int height, const char *rgbabindbuf) {
-    bool generateMipMaps = true;    /* ひとまず、true固定値 */
+    bool generateMipMaps = true;    /* ひとまず、true固定 */
 
     GLuint texid;
     glGenTextures(1, &texid);
