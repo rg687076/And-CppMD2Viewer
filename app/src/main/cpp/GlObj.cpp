@@ -157,6 +157,10 @@ RetShaderAttribs GlObj::setAttribute(GLuint programId, int totalframes,
     const size_t numVertexsperframe = vertexs.size() / totalframes;
 
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "endFrame=%d numPoly=%d numVertexsperframe=%d %s %s(%d)", totalframes, numPolys, numVertexsperframe, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+//    2022-11-02 10:41:10.013 24069-24094/com.tks.cppmd2viewer I/aaaaa: endFrame=198 numPoly=592 numVertexsperframe=312 static RetShaderAttribs GlObj::setAttribute(GLuint, int, const std::vector<vertex> &, const std::vector<mesh> &, const std::vector<texstcoord> &) GlObj.cpp(159)
+//    2022-11-02 10:41:10.310 24069-24094/com.tks.cppmd2viewer I/aaaaa: endFrame=198 numPoly=590 numVertexsperframe=315 static RetShaderAttribs GlObj::setAttribute(GLuint, int, const std::vector<vertex> &, const std::vector<mesh> &, const std::vector<texstcoord> &) GlObj.cpp(159)
+
 //    2022-11-01 20:30:26.843 27392-27431/org.raydelto.md2loader I/aaaaa: endFrame=197 numPoly=592 numVertexsperframe=312 void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(100)
 //    2022-11-01 20:30:27.120 27392-27431/org.raydelto.md2loader I/aaaaa: count=1776 (m_frameIndices[frameIndex].first * 8)=0  void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(144)
 //    2022-11-01 20:30:27.170 27392-27431/org.raydelto.md2loader I/aaaaa: endFrame=197 numPoly=590 numVertexsperframe=315 void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(100)
