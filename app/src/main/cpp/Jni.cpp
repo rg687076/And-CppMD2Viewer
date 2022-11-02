@@ -136,6 +136,25 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onStop(JNIEnv *env, jclass 
     return;
 }
 
+/* モデルデータ移動 */
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setModelPosition(JNIEnv *env, jclass clazz, jstring modelnamejstr, jfloat x, jfloat y, jfloat z) {
+    const char *modelnamechar = env->GetStringUTFChars(modelnamejstr, nullptr);
+
+    std::map<std::string, Md2ModelInfo>::iterator itr = gMd2models.find(modelnamechar);
+    if(itr == gMd2models.end()) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "warning!! 指定キャラクタ(=%s)は存在しない。 %s %s(%d)", modelnamechar, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        return;
+    }
+
+    /* Global座標を設定 */
+    (*itr).second.mPosition = {x, y, z};
+
+    env->ReleaseStringUTFChars(modelnamejstr  , modelnamechar);
+    env->DeleteLocalRef(modelnamejstr);
+
+    return;
+}
+
 #ifdef __cplusplus
 };
 #endif

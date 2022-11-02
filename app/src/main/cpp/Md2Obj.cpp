@@ -46,14 +46,11 @@ bool Md2Obj::InitModel(std::map<std::string, Md2ModelInfo> &md2models) {
 Md2ModelInfo::~Md2ModelInfo() {
     std::vector<char>().swap(mWkMd2BinData);
     std::vector<char>().swap(mWkTexBinData);
+    std::vector<char>().swap(mWkRgbaData);
+    std::unordered_map<int, std::pair<int, int>>().swap(mFrameIndices);
 }
 
 bool Md2ModelInfo::LoadModel() {
-//    std::istringstream md2binstream(std::string(mWkMd2BinData.begin(), mWkMd2BinData.end()));
-//    md2binstream.read((char*)&header, sizeof(md2header));
-//    md2binstream.str("");
-//    md2binstream.clear(std::stringstream::goodbit);
-
     /* MD2ヘッダ */
     md2header *header = (md2header*)mWkMd2BinData.data();
 

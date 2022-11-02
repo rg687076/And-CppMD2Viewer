@@ -26,7 +26,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-    private ArrayList<String> mDrwModel = new ArrayList<>();
+    private ArrayList<String> mDrwModelNames = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +45,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
                 Jni.onSurfaceCreated();
-            }
+                Jni.setModelPosition(mDrwModelNames.get(0), 0.0f, 0.0f, 0.0f);
+                Jni.setModelPosition(mDrwModelNames.get(1), 0.0f, 6.5f, -25.0f);
+           }
 
             @Override
             public void onSurfaceChanged(GL10 gl10, int w, int h) {
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                                                     texfilename=md2model.getString("tex");
                                                     vshfilename=md2model.getString("vsh");
                                                     fshfilename=md2model.getString("fsh");}};
-                mDrwModel.add(mi.modelname);
+                mDrwModelNames.add(mi.modelname);
                 md2modelindex.put(md2model.getString("name"), mi);
             }
         }

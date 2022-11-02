@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <array>
 #include <GLES2/gl2.h>
 #include "Md2Parts.h"
 #include "TexObj.h"
@@ -51,6 +52,7 @@ public:
     std::vector<char>   mWkRgbaData = {0};
     /* 描画に必要なデータ */
     MdlData             mMdlData = {0};
+    std::array<float, 3> mPosition = {0, 0, 0};
     /* アニメ関連 */
     std::unordered_map<int, std::pair<int, int>> mFrameIndices = {};
     /* テクスチャ関連 */
