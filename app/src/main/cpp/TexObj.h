@@ -79,7 +79,7 @@ typedef struct BGRAQUAD {
 
 class TexObj {
 public:
-    static std::tuple<bool, GLuint> LoadTexture(std::vector<char> &texbindata);
+    static std::tuple<bool, int, int, std::vector<char>> LoadTexture(std::vector<char> &texbindata);
 
 private:
     static std::tuple<int/*幅*/, int/*高さ*/, std::vector<char>/*RGBA*/> LoadTextureFromBmp(std::vector<char> &texbindata);

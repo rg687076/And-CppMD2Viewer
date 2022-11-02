@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <mutex>
 #include <jni.h>
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
@@ -11,10 +12,14 @@
 extern "C" {
 #endif
 
+std::map<std::string, Md2ModelInfo> gMd2models; /* Md2モデルデータ実体 */
+std::mutex gMutex;                              /* onStart()完了待ちmutex */
+
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
                                                                  jobjectArray modelnames, jobjectArray md2filenames, jobjectArray texfilenames,
                                                                  jobjectArray vshfilenames, jobjectArray fshfilenames) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    gMutex.lock();
 
     /* 引数チェック(md2model) */
     jsize size0 = env->GetArrayLength(modelnames), size1 = env->GetArrayLength(md2filenames), size2 = env->GetArrayLength(texfilenames), size3 = env->GetArrayLength(vshfilenames), size4 = env->GetArrayLength(fshfilenames);
@@ -93,17 +98,26 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     }
 
     /* 初期化 */
-    bool ret = Md2Obj::Init(gMd2models);
+    bool ret = Md2Obj::LoadModel(gMd2models);
     if(!ret) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Init()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::LoadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
 
+    gMutex.unlock();
     return true;
 }
 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *env, jclass clazz) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    gMutex.lock();  /* onStart()の実行終了を待つ */
+
+    /* 初期化(GL系は、このタイミングでないとエラーになる) */
+    bool ret = Md2Obj::InitModel(gMd2models);
+    if(!ret)
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+    gMutex.unlock();
     return;
 }
 

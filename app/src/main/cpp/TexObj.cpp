@@ -4,11 +4,11 @@
 #include "GlObj.h"
 
 /* 画像形式判定 */
-std::tuple<bool, GLuint> TexObj::LoadTexture(std::vector<char> &texbindata) {
-    std::istringstream texbinstream(std::string(texbindata.begin(), texbindata.end()));
+std::tuple<bool, int, int, std::vector<char>> TexObj::LoadTexture(std::vector<char> &texbindata) {
+    int retImgw = 0, retImgh = 0;
+    std::vector<char> retRgbaBuf;
 
-    int imgw = 0, imgh = 0;
-    std::vector<char> wkRgbaBuf;
+    std::istringstream texbinstream(std::string(texbindata.begin(), texbindata.end()));
 
     /* フォーマットチェック(BMP) */
     char bm[2] = {0};
@@ -17,9 +17,10 @@ std::tuple<bool, GLuint> TexObj::LoadTexture(std::vector<char> &texbindata) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "BMP形式(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         /* BMP読込み */
         auto[w, h, wkbuf] = LoadTextureFromBmp(texbindata);
-        imgw = w;
-        imgh = h;
-        wkRgbaBuf = std::move(wkbuf);
+        retImgw = w;
+        retImgh = h;
+        retRgbaBuf = std::move(wkbuf);
+        return {true, retImgw, retImgh, retRgbaBuf};
     }
     else {
         __android_log_print(ANDROID_LOG_ERROR, "aaaaa", "BMP形式ではない(%c %c) %s %s(%d)", bm[0], bm[1], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
@@ -34,23 +35,22 @@ std::tuple<bool, GLuint> TexObj::LoadTexture(std::vector<char> &texbindata) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "TGA形式(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         /* TGA読込み */
         auto[w, h, wkbuf] = LoadTextureFromTga(texbindata);
-        imgw = w;
-        imgh = h;
-        wkRgbaBuf = std::move(wkbuf);
+        retImgw = w;
+        retImgh = h;
+        retRgbaBuf = std::move(wkbuf);
+        return {true, retImgw, retImgh, retRgbaBuf};
     }
     else {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "TGA形式ではない(%s) %s %s(%d)", TRUEVISION_TARGA, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 //        return {false, -1}; /* 他の形式の可能性がある */
     }
 
-    if(wkRgbaBuf.empty()) {
+    if(retRgbaBuf.empty()) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Unsupported file format. %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-        return {false, -1}; /* 未サポート形式 */
+        return {false, 0, 0, {}}; /* 未サポート形式 */
     }
 
-    /* OpenGLのTexture初期化 */
-    auto[boolret, texid] = GlObj::TexInit(imgw, imgh, wkRgbaBuf.data());
-    return {boolret, texid};
+    return {false, 0, 0, {}}; /* 未サポート形式 */
 }
 
 /* BMPフォーマット読込み */

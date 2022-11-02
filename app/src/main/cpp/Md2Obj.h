@@ -34,11 +34,22 @@ struct MdlData {
 
 class Md2ModelInfo {
 public:
+    ~Md2ModelInfo();
+    bool LoadModel();
+    bool LoadTexture(); /* AssetsからTextureデータを読込む */
+    bool InitTexture(); /* TextureデータをOpenGLで使えるようにする */
+    bool InitShaders(); /* シェーダをOpenGLで使えるようにする */
+
+public:
     std::string         mName = {0};
     std::vector<char>   mWkMd2BinData = {0};
     std::vector<char>   mWkTexBinData = {0};
     std::string         mWkVshStrData = {0};
     std::string         mWkFshStrData = {0};
+    int                 mWkWidth = 0;
+    int                 mWkHeight= 0;
+    std::vector<char>   mWkRgbaData = {0};
+    /* 描画に必要なデータ */
     MdlData             mMdlData = {0};
     /* アニメ関連 */
     std::unordered_map<int, std::pair<int, int>> mFrameIndices = {};
@@ -50,20 +61,12 @@ public:
     GLuint mCurPosAttrib  = -1;
     GLuint mNextPosAttrib = -1;
     GLuint mTexCoordAttrib= -1;
-
-public:
-    ~Md2ModelInfo();
-    bool LoadModel();
-    bool LoadTexture();
-    bool LoadShaders();
 };
-
-/* Md2モデルs */
-extern std::map<std::string, Md2ModelInfo> gMd2models;
 
 class Md2Obj {
 public:
-    static bool Init(std::map<std::string, Md2ModelInfo> &md2models);
+    static bool LoadModel(std::map<std::string, Md2ModelInfo> &md2models);
+    static bool InitModel(std::map<std::string, Md2ModelInfo> &map);
 };
 
 #endif //CPPMD2VIEWER_MD2OBJ_H

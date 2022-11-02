@@ -7,30 +7,39 @@
 #include "TexObj.h"
 #include "GlObj.h"
 
-/* Md2モデルデータ実体 */
-std::map<std::string, Md2ModelInfo> gMd2models;
-
-/* Md2モデル初期化(model読込,tex読込) */
-bool Md2Obj::Init(std::map<std::string, Md2ModelInfo> &md2models) {
+/* Md2モデル読込み(model読込,tex読込) */
+bool Md2Obj::LoadModel(std::map<std::string, Md2ModelInfo> &md2models) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
-    for(auto &[key, value] : gMd2models) {
+    for(auto &[key, value] : md2models) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model load start (%s). %s %s(%d)", value.mName.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         /* MD2モデルLoad */
         bool ret = value.LoadModel();
         std::vector<char>().swap(value.mWkMd2BinData);
         if( !ret) return false;
         /* テクスチャLoad */
-        bool ret2 = value.LoadTexture();
+        bool ret1 = value.LoadTexture();
         std::vector<char>().swap(value.mWkTexBinData);
-        if( !ret2) return false;
+        if( !ret1) return false;
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model and Texture LOADED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-        /* シェーダ初期化 */
-        bool ret3 = value.LoadShaders();
-        if( !ret3) return false;
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Shader INITIALIZED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     }
 
+    return true;
+}
+
+/* Md2モデル初期化(特にOpenGL系は、onSurfaceCreated()ドリブンで動作しないとエラーになる) */
+bool Md2Obj::InitModel(std::map<std::string, Md2ModelInfo> &md2models) {
+    for(auto &[key, value] : md2models) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model Init start (%s). %s %s(%d)", value.mName.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        /* テクスチャInit */
+        bool ret2 = value.InitTexture();
+        std::vector<char>().swap(value.mWkTexBinData);
+        if( !ret2) return false;
+        /* シェーダ初期化 */
+        bool ret3 = value.InitShaders();
+        if( !ret3) return false;
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Shader Init end(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    }
     return true;
 }
 
@@ -112,17 +121,34 @@ bool Md2ModelInfo::LoadModel() {
     return true;
 }
 
+/* AssetsからTextureデータを読込む */
 bool Md2ModelInfo::LoadTexture() {
-    auto [retbool, texid] = TexObj::LoadTexture(mWkTexBinData);
-    if(retbool)
-        mTexId = texid;
-    else
-        mTexId = -1;
-
+    auto [retbool, w, h, rgbadata] = TexObj::LoadTexture(mWkTexBinData);
+    if(retbool) {
+        mWkWidth = w;
+        mWkHeight= h;
+        mWkRgbaData = rgbadata;
+    }
     return retbool;
 }
 
-bool Md2ModelInfo::LoadShaders() {
+/* TextureデータをOpenGLで使えるようにする */
+bool Md2ModelInfo::InitTexture() {
+    /* OpenGLのTexture初期化 */
+    auto[boolret, texid] = GlObj::TexInit(mWkWidth, mWkHeight, mWkRgbaData.data());
+    if(boolret)
+        mTexId = texid;
+
+    /* 解放処理 */
+    mWkWidth = 0;
+    mWkHeight= 0;
+    std::vector<char>().swap(mWkRgbaData);
+
+    return boolret;
+}
+
+/* シェーダをOpenGLで使えるようにする */
+bool Md2ModelInfo::InitShaders() {
     /* シェーダ読込み */
     auto[retboot, progid] = GlObj::LoadShaders(mWkVshStrData, mWkFshStrData);
     if( !retboot) {
