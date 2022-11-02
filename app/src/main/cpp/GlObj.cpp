@@ -156,16 +156,6 @@ RetShaderAttribs GlObj::setAttribute(GLuint programId, int totalframes,
     const size_t numPolys           = polyIndexs.size();
     const size_t numVertexsperframe = vertexs.size() / totalframes;
 
-    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "endFrame=%d numPoly=%d numVertexsperframe=%d %s %s(%d)", totalframes, numPolys, numVertexsperframe, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-
-//    2022-11-02 10:41:10.013 24069-24094/com.tks.cppmd2viewer I/aaaaa: endFrame=198 numPoly=592 numVertexsperframe=312 static RetShaderAttribs GlObj::setAttribute(GLuint, int, const std::vector<vertex> &, const std::vector<mesh> &, const std::vector<texstcoord> &) GlObj.cpp(159)
-//    2022-11-02 10:41:10.310 24069-24094/com.tks.cppmd2viewer I/aaaaa: endFrame=198 numPoly=590 numVertexsperframe=315 static RetShaderAttribs GlObj::setAttribute(GLuint, int, const std::vector<vertex> &, const std::vector<mesh> &, const std::vector<texstcoord> &) GlObj.cpp(159)
-
-//    2022-11-01 20:30:26.843 27392-27431/org.raydelto.md2loader I/aaaaa: endFrame=197 numPoly=592 numVertexsperframe=312 void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(100)
-//    2022-11-01 20:30:27.120 27392-27431/org.raydelto.md2loader I/aaaaa: count=1776 (m_frameIndices[frameIndex].first * 8)=0  void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(144)
-//    2022-11-01 20:30:27.170 27392-27431/org.raydelto.md2loader I/aaaaa: endFrame=197 numPoly=590 numVertexsperframe=315 void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(100)
-//    2022-11-01 20:30:27.435 27392-27431/org.raydelto.md2loader I/aaaaa: count=1770 (m_frameIndices[frameIndex].first * 8)=0  void Raydelto::MD2Loader::MD2Model::InitBuffer() MD2Model.cpp(144)
-
     /* 現在頂点,次頂点,UV座標で詰替え */
     for(int frameidx = 0; frameidx < totalframes; frameidx++) {
         /* 現在フレームと次フレームを取得 */
@@ -192,20 +182,8 @@ RetShaderAttribs GlObj::setAttribute(GLuint programId, int totalframes,
         }
 
         int startverindex= (frameidx==0) ? 0 : retAnimFrameS2e[frameidx-1].second + 1;
-        int endverindex  = numPolys * 3 - 1;
+        int endverindex  = ((frameidx+1) * numPolys * 3) - 1;
         retAnimFrameS2e[frameidx] = {startverindex, endverindex};
-    }
-
-    /* TODO 削除予定 */
-    for(auto [key, val] : retAnimFrameS2e) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "m_frameIndices[%d]={sv:%d, ev:%d}", key, val.first, val.second);
-//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[197]={sv:349872, ev:351647}
-//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[196]={sv:348096, ev:349871}
-//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[195]={sv:346320, ev:348095}
-//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[194]={sv:344544, ev:346319}
-//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[2]={sv:3552, ev:5327}
-//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[1]={sv:1776, ev:3551}
-//        2022-11-01 17:44:07.691 14015-14075/org.raydelto.md2loader I/aaaaa: m_frameIndices[0]={sv:0, ev:1775}
     }
 
     size_t numVertexs = numPolys * 3 + 1;
