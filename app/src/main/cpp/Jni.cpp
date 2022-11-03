@@ -177,6 +177,17 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setModelPosition(JNIEnv *en
     return;
 }
 
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
+    gGlobalSpaceObj.mScale = scale;
+    return;
+}
+
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setRotate(JNIEnv *env, jclass clazz, jfloat rotatex, jfloat rotatey) {
+    gGlobalSpaceObj.mRotatex = rotatex;
+    gGlobalSpaceObj.mRotatey = rotatey;
+    return;
+}
+
 #ifdef __cplusplus
 };
 #endif

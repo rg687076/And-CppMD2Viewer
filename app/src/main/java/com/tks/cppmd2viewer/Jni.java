@@ -13,4 +13,6 @@ public class Jni {
     public static native void onSurfaceChanged(int w, int h);
     public static native void onDrawFrame();
     public static native void onStop();
+    public static native void setScale(float mScale);
+    public static native void setRotate(float mTouchAngleX, float mTouchAngleY);
 }

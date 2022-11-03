@@ -8,9 +8,12 @@ public:
     std::array<float, 16> mProjectionMat= Mat44::IDENTITY;
     std::array<float, 16> mViewMat      = Mat44::IDENTITY;
     std::array<float, 16> mVpMat        = Mat44::IDENTITY;
-    std::array<float,  3> mCameraPos;
-    std::array<float,  3> mTargetPos;
-    std::array<float,  3> mUpPos;
+    std::array<float,  3> mCameraPos = {};
+    std::array<float,  3> mTargetPos = {};
+    std::array<float,  3> mUpPos     = {};
+    float mScale  = 0;
+    float mRotatex= 0;
+    float mRotatey= 0;
 };
 
 #endif //CPPMD2VIEWER_GLOBALSPACEOBJ_H

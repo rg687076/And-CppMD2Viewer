@@ -76,11 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 mScale = detector.getScaleFactor();
                 if(mScale > 5) mScale = 5;
                 else if(mScale < 0.2) mScale = 0.2f;
-
-//                /* TODO ここで、拡縮設定処理 呼び出し */
-//                MQO.setScale(mScale);
-
-
+                Jni.setScale(mScale);
                 return super.onScale(detector);
             }
 
@@ -177,11 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 float dy = factor * (event.getY() - mLastY);
                 mTouchAngleX = Math.max(Math.min(mTouchAngleX+dy,90f),-90f);
                 mTouchAngleY += dx;
-
-//                /* TODO   ここで回転処理 呼び出し */
-//                MQO.setTouchAngle(mTouchAngleX, mTouchAngleY);
-
-
+                Jni.setRotate(mTouchAngleX, mTouchAngleY);
                 mLastX = event.getX();
                 mLastY = event.getY();
             }
