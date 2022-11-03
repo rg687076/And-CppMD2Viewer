@@ -7,6 +7,8 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.tks.cppmd2viewer.databinding.ActivityMainBinding;
@@ -27,6 +29,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private ArrayList<String> mDrwModelNames = new ArrayList<>();
+    private ScaleGestureDetector mPinchDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,12 +54,39 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSurfaceChanged(GL10 gl10, int w, int h) {
+                mHeight = h;
                 Jni.onSurfaceChanged(w, h);
             }
 
             @Override
             public void onDrawFrame(GL10 gl10) {
                 Jni.onDrawFrame();
+            }
+        });
+
+        /* ピンチジェスチャー定義 */
+        mPinchDetector = new ScaleGestureDetector(this.getApplicationContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScaleBegin(ScaleGestureDetector detector) {
+                return super.onScaleBegin(detector);
+            }
+
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                mScale = detector.getScaleFactor();
+                if(mScale > 5) mScale = 5;
+                else if(mScale < 0.2) mScale = 0.2f;
+
+//                /* TODO ここで、拡縮設定処理 呼び出し */
+//                MQO.setScale(mScale);
+
+
+                return super.onScale(detector);
+            }
+
+            @Override
+            public void onScaleEnd(ScaleGestureDetector detector) {
+                super.onScaleEnd(detector);
             }
         });
     }
@@ -124,6 +154,40 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Jni.onStop();
+    }
+
+    private float mScale = 1.0f;
+    private float mTouchAngleX, mTouchAngleY;
+    private float mLastX,mLastY;
+    private int mHeight;
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if(event.getPointerCount() == 2)
+            return mPinchDetector.onTouchEvent(event);
+
+        switch(event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mLastX = event.getX();
+                mLastY = event.getY();
+                return true;
+            case MotionEvent.ACTION_MOVE:
+            {
+                float factor = 100f / mHeight;
+                float dx = factor * (event.getX() - mLastX);
+                float dy = factor * (event.getY() - mLastY);
+                mTouchAngleX = Math.max(Math.min(mTouchAngleX+dy,90f),-90f);
+                mTouchAngleY += dx;
+
+//                /* TODO   ここで回転処理 呼び出し */
+//                MQO.setTouchAngle(mTouchAngleX, mTouchAngleY);
+
+
+                mLastX = event.getX();
+                mLastY = event.getY();
+            }
+            return true;
+        }
+        return super.onTouchEvent(event);
     }
 }
 
