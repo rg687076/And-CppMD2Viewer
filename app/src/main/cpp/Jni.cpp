@@ -179,12 +179,36 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setModelPosition(JNIEnv *en
 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
     gGlobalSpaceObj.mScale = scale;
+
+    /* モデル行列を算出 */
+    std::array<float, 16> rotetematx = Mat44::getRotatef(-gGlobalSpaceObj.mRotatex, 1.0f, 0.0f, 0.0f);
+    std::array<float, 16> rotetematy = Mat44::getRotatef( gGlobalSpaceObj.mRotatey, 0.0f, 1.0f, 0.0f);
+    std::array<float, 16> rotetemat = Mat44::multMatrixf(rotetematx, rotetematy);
+    std::array<float, 16> translatemat = Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
+    gGlobalSpaceObj.mModelMat = Mat44::scalef(translatemat, gGlobalSpaceObj.mScale, gGlobalSpaceObj.mScale, gGlobalSpaceObj.mScale);
+
+    /* 正規行列を算出 */
+    std::array<float, 16> invertMat = Mat44::invertf(gGlobalSpaceObj.mModelMat);
+    gGlobalSpaceObj.mNormalMatrix = Mat44::transposef(invertMat);
+
     return;
 }
 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setRotate(JNIEnv *env, jclass clazz, jfloat rotatex, jfloat rotatey) {
     gGlobalSpaceObj.mRotatex = rotatex;
     gGlobalSpaceObj.mRotatey = rotatey;
+
+    /* モデル行列を算出 */
+    std::array<float, 16> rotetematx = Mat44::getRotatef(-gGlobalSpaceObj.mRotatex, 1.0f, 0.0f, 0.0f);
+    std::array<float, 16> rotetematy = Mat44::getRotatef( gGlobalSpaceObj.mRotatey, 0.0f, 1.0f, 0.0f);
+    std::array<float, 16> rotetemat = Mat44::multMatrixf(rotetematx, rotetematy);
+    std::array<float, 16> translatemat = Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
+    gGlobalSpaceObj.mModelMat = Mat44::scalef(translatemat, gGlobalSpaceObj.mScale, gGlobalSpaceObj.mScale, gGlobalSpaceObj.mScale);
+
+    /* 正規行列を算出 */
+    std::array<float, 16> invertMat = Mat44::invertf(gGlobalSpaceObj.mModelMat);
+    gGlobalSpaceObj.mNormalMatrix = Mat44::transposef(invertMat);
+
     return;
 }
 
