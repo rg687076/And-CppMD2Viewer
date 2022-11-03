@@ -7,13 +7,16 @@
 #include <android/asset_manager_jni.h>
 #include "Md2Obj.h"
 #include "GlObj.h"
+#include "GlobalSpaceObj.h"
+#include "MatObj.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-std::map<std::string, Md2ModelInfo> gMd2models; /* Md2モデルデータ実体 */
-std::mutex gMutex;                              /* onStart()完了待ちmutex */
+std::map<std::string, Md2ModelInfo> gMd2models;     /* Md2モデルデータ実体 */
+std::mutex                          gMutex;         /* onStart()完了待ちmutex */
+GlobalSpaceObj                      gGlobalSpaceObj;   /* onStart()完了待ちmutex */
 
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
                                                                  jobjectArray modelnames, jobjectArray md2filenames, jobjectArray texfilenames,
@@ -112,17 +115,36 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *en
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     gMutex.lock();  /* onStart()の実行終了を待つ */
 
-    /* 初期化(GL系は、このタイミングでないとエラーになる) */
+    /* OpenGL初期化(GL系は、このタイミングでないとエラーになる) */
+    GlObj::GlInit();
+
+    /* GL系モデル初期化(GL系は、このタイミングでないとエラーになる) */
     bool ret = Md2Obj::InitModel(gMd2models);
     if(!ret)
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+    /* View行列を設定 */
+    std::array<float,  3> camerapos = {0.0f, 250.0f, 1000.0f};
+    std::array<float,  3> targetpos = {0.0f, 0.0f, 0.0f};
+    std::array<float,  3> uppos     = {0.0f, 1.0f, 0.0f};
+    gGlobalSpaceObj.mCameraPos = camerapos;
+    gGlobalSpaceObj.mTargetPos = targetpos;
+    gGlobalSpaceObj.mUpPos     = uppos;
+    gGlobalSpaceObj.mViewMat   = Mat44::getLookAtf(camerapos, targetpos, uppos);
+    /* ビュー行列を変更したので再計算 */
+    gGlobalSpaceObj.mVpMat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
 
     gMutex.unlock();
     return;
 }
 
-JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *env, jclass clazz, jint w, jint h) {
-    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "w=%d h=%d %s %s(%d)", w, h,__PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "w=%d h=%d %s %s(%d)", width, height, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+    gGlobalSpaceObj.mProjectionMat = Mat44::getPerspectivef(30.0, ((float)width)/((float)height), 1.0, 5000.0);
+    /* 投影行列を変更したので再計算 */
+    gGlobalSpaceObj.mVpMat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
+
     return;
 }
 

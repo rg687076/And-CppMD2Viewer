@@ -51,8 +51,8 @@ public:
     int                 mWkHeight= 0;
     std::vector<char>   mWkRgbaData = {0};
     /* 描画に必要なデータ */
-    MdlData             mMdlData = {0};
-    std::array<float, 3> mPosition = {0, 0, 0};
+    MdlData                 mMdlData = {0};
+    std::array<float, 3>    mPosition = {0, 0, 0};
     /* アニメ関連 */
     std::unordered_map<int, std::pair<int, int>> mFrameIndices = {};
     /* テクスチャ関連 */
