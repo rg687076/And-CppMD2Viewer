@@ -10,6 +10,7 @@ const std::array<float, 16> Mat44::IDENTITY = {
         0.0, 0.0, 0.0, 1.0
 };
 
+/* 投影行列を生成 */
 std::array<float, 16> Mat44::getPerspectivef(float fovy, float aspect, float near, float far) {
     std::array<float, 16> retMat = {};
 
@@ -117,7 +118,7 @@ std::array<float, 16> Mat44::getLookAtf(const std::array<float, 3> &camerapos,
     return retMat;
 }
 
-/* 移動行列を設定 */
+/* 行列を移動 */
 std::array<float, 16> Mat44::translatef(const std::array<float, 16> &mat, const std::array<float, 3> &vec) {
     std::array<float, 16> retmat = mat;
     retmat[12] = mat[0] * vec[0] + mat[4] * vec[1] + mat[ 8] * vec[2] + mat[12];
@@ -127,7 +128,8 @@ std::array<float, 16> Mat44::translatef(const std::array<float, 16> &mat, const 
     return retmat;
 }
 
-std::array<float, 16> Mat44::scalef(std::array<float, 16> &mat, float x, float y, float z) {
+/* 行列を拡縮 */
+std::array<float, 16> Mat44::scalef(const std::array<float, 16> &mat, float x, float y, float z) {
     std::array<float, 16> retmat = mat;
     for (int i=0 ; i<4 ; i++) {
         retmat[	    i] = mat[	  i] * x;
@@ -322,7 +324,7 @@ std::array<float, 16> Mat44::invertf(const std::array<float, 16> &matrix) {
     return retmat;
 }
 
-/* 転置行列を求める */
+/* 転置行列を取得 */
 std::array<float, 16> Mat44::transposef(const std::array<float, 16> &matrix) {
     std::array<float, 16> retmat = {};
     for (int i = 0; i < 4; i++) {
@@ -336,7 +338,7 @@ std::array<float, 16> Mat44::transposef(const std::array<float, 16> &matrix) {
     return retmat;
 }
 
-/* 正規化 */
+/* ベクトルを正規化 */
 std::array<float, 3> Vec3::normalize(const std::array<float, 3> &vec) {
     std::array<float, 3> retvec = vec;
 
@@ -351,7 +353,7 @@ std::array<float, 3> Vec3::normalize(const std::array<float, 3> &vec) {
     return retvec;
 }
 
-/* 外積(ベクトルのみ) */
+/* ベクトル同士を外積(ベクトルのみ) */
 std::array<float, 3> Vec3::cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2) {
     std::array<float, 3> retvec = {};
     retvec[0] = v1[1] * v2[2] - v1[2] * v2[1];
