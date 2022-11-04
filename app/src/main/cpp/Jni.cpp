@@ -142,10 +142,13 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *en
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "w=%d h=%d %s %s(%d)", width, height, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
-    gGlobalSpaceObj.mProjectionMat = Mat44::getPerspectivef(30.0, ((float)width)/((float)height), 1.0, 5000.0);
+    /* setViewport() */
+    GlObj::setViewport(0, 0, width, height);
+
+    gGlobalSpaceObj.mProjectionMat  = Mat44::getPerspectivef(30.0, ((float)width)/((float)height), 1.0, 5000.0);
     /* 投影行列を更新したので再計算 */
-    std::array<float, 16> vpmat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
-    gGlobalSpaceObj.mMvpMat     = Mat44::multMatrixf(vpmat, gGlobalSpaceObj.mModelMat);
+    std::array<float, 16> vpmat     = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
+    gGlobalSpaceObj.mMvpMat         = Mat44::multMatrixf(vpmat, gGlobalSpaceObj.mModelMat);
 
     return;
 }

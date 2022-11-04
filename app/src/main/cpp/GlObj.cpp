@@ -233,3 +233,8 @@ RetShaderAttribs GlObj::setAttribute(GLuint programId, int totalframes,
 
     return {true, retAnimFrameS2e, retVbo, retCurPosAttrib, retNextPosAttrib, retTexCoordAttrib};
 }
+
+/* ウィンドウのサイズの定義 */
+void GlObj::setViewport(int x, int y, int width, int height) {
+    glViewport(x, y, width, height);
+}
