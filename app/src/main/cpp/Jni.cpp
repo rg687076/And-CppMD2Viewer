@@ -16,7 +16,7 @@ extern "C" {
 
 std::map<std::string, Md2ModelInfo> gMd2models;     /* Md2モデルデータ実体 */
 std::mutex                          gMutex;         /* onStart()完了待ちmutex */
-GlobalSpaceObj                      gGlobalSpaceObj;   /* onStart()完了待ちmutex */
+GlobalSpaceObj                      gGlobalSpaceObj;/* onStart()完了待ちmutex */
 
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
                                                                  jobjectArray modelnames, jobjectArray md2filenames, jobjectArray texfilenames,
@@ -155,6 +155,15 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *en
 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jclass clazz) {
 //    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    Md2Obj::ArgType globalprm = {gGlobalSpaceObj.mMvpMat, gGlobalSpaceObj.mNormalMatrix, gGlobalSpaceObj.mScale, gGlobalSpaceObj.mRotatex, gGlobalSpaceObj.mRotatey};
+
+    /* Md2モデル描画 */
+    bool ret = Md2Obj::DrawModel(gMd2models, globalprm);
+    if(!ret) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::DrawModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        return;
+    }
+
     return;
 }
 
@@ -163,7 +172,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onStop(JNIEnv *env, jclass 
     return;
 }
 
-/* モデルデータ移動 */
+/* モデルデータ位置設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setModelPosition(JNIEnv *env, jclass clazz, jstring modelnamejstr, jfloat x, jfloat y, jfloat z) {
     const char *modelnamechar = env->GetStringUTFChars(modelnamejstr, nullptr);
 
@@ -182,6 +191,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setModelPosition(JNIEnv *en
     return;
 }
 
+/* モデルデータ拡縮設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
     gGlobalSpaceObj.mScale = scale;
 
@@ -202,6 +212,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclas
     return;
 }
 
+/* モデルデータ回転設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setRotate(JNIEnv *env, jclass clazz, jfloat rotatex, jfloat rotatey) {
     gGlobalSpaceObj.mRotatex = rotatex;
     gGlobalSpaceObj.mRotatey = rotatey;

@@ -43,6 +43,20 @@ bool Md2Obj::InitModel(std::map<std::string, Md2ModelInfo> &md2models) {
     return true;
 }
 
+/* Md2モデル描画 */
+bool Md2Obj::DrawModel(std::map<std::string, Md2ModelInfo> &md2models, const Md2Obj::ArgType &GlobalSpace) {
+    const std::array<float, 16> &aMvpMat     = std::get<0>(GlobalSpace);
+    const std::array<float, 16> &amNormalMat = std::get<1>(GlobalSpace);
+    float Scale                              = std::get<2>(GlobalSpace);
+    float Rotatex                            = std::get<3>(GlobalSpace);
+    float Rotatey                            = std::get<4>(GlobalSpace);
+
+    for(auto &[key, value] : md2models) {
+        value.DrawModel(aMvpMat, amNormalMat, Scale, Rotatex, Rotatey);
+    }
+    return true;
+}
+
 Md2ModelInfo::~Md2ModelInfo() {
     std::vector<char>().swap(mWkMd2BinData);
     std::vector<char>().swap(mWkTexBinData);
@@ -167,6 +181,12 @@ bool Md2ModelInfo::InitShaders() {
     mCurPosAttrib  = retCurPosAttrib;
     mNextPosAttrib = retNextPosAttrib;
     mTexCoordAttrib= retTexCoordAttrib;
+
+    return true;
+}
+
+bool Md2ModelInfo::DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey) {
+
 
     return true;
 }

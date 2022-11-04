@@ -40,6 +40,7 @@ public:
     bool LoadTexture(); /* AssetsからTextureデータを読込む */
     bool InitTexture(); /* TextureデータをOpenGLで使えるようにする */
     bool InitShaders(); /* シェーダをOpenGLで使えるようにする */
+    bool DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey);
 
 public:
     std::string         mName = {0};
@@ -68,7 +69,9 @@ public:
 class Md2Obj {
 public:
     static bool LoadModel(std::map<std::string, Md2ModelInfo> &md2models);
-    static bool InitModel(std::map<std::string, Md2ModelInfo> &map);
+    static bool InitModel(std::map<std::string, Md2ModelInfo> &md2models);
+    using ArgType = std::tuple<const std::array<float, 16> &, const std::array<float, 16> &, float, float, float>;
+    static bool DrawModel(std::map<std::string, Md2ModelInfo> &md2models, const ArgType &GlobalSpace);
 };
 
 #endif //CPPMD2VIEWER_MD2OBJ_H
