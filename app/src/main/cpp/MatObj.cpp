@@ -129,12 +129,12 @@ std::array<float, 16> Mat44::translatef(const std::array<float, 16> &mat, const 
 }
 
 /* 行列を拡縮 */
-std::array<float, 16> Mat44::scalef(const std::array<float, 16> &mat, float x, float y, float z) {
+std::array<float, 16> Mat44::scalef(const std::array<float, 16> &mat, const std::array<float, 3> &vec) {
     std::array<float, 16> retmat = mat;
     for (int i=0 ; i<4 ; i++) {
-        retmat[	    i] = mat[	  i] * x;
-        retmat[ 4 + i] = mat[ 4 + i] * y;
-        retmat[ 8 + i] = mat[ 8 + i] * z;
+        retmat[	    i] = mat[	  i] * vec[0];	/* x */
+        retmat[ 4 + i] = mat[ 4 + i] * vec[1];	/* y */
+        retmat[ 8 + i] = mat[ 8 + i] * vec[2];	/* z */
     }
     return retmat;
 }
