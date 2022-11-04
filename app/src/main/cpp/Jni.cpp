@@ -123,7 +123,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *en
     if(!ret)
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
-    /* View行列を設定 */
+    /* View行列を更新 */
     std::array<float,  3> camerapos = {0.0f, 250.0f, 1000.0f};
     std::array<float,  3> targetpos = {0.0f, 0.0f, 0.0f};
     std::array<float,  3> uppos     = {0.0f, 1.0f, 0.0f};
@@ -131,8 +131,9 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *en
     gGlobalSpaceObj.mTargetPos = targetpos;
     gGlobalSpaceObj.mUpPos     = uppos;
     gGlobalSpaceObj.mViewMat   = Mat44::getLookAtf(camerapos, targetpos, uppos);
-    /* ビュー行列を変更したので再計算 */
-    gGlobalSpaceObj.mVpMat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
+    /* ビュー行列を更新したので再計算 */
+    std::array<float, 16> vpmat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
+    gGlobalSpaceObj.mMvpMat     = Mat44::multMatrixf(vpmat, gGlobalSpaceObj.mModelMat);
 
     gMutex.unlock();
     return;
@@ -142,8 +143,9 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *en
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "w=%d h=%d %s %s(%d)", width, height, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
     gGlobalSpaceObj.mProjectionMat = Mat44::getPerspectivef(30.0, ((float)width)/((float)height), 1.0, 5000.0);
-    /* 投影行列を変更したので再計算 */
-    gGlobalSpaceObj.mVpMat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
+    /* 投影行列を更新したので再計算 */
+    std::array<float, 16> vpmat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
+    gGlobalSpaceObj.mMvpMat     = Mat44::multMatrixf(vpmat, gGlobalSpaceObj.mModelMat);
 
     return;
 }
@@ -186,6 +188,9 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclas
     std::array<float, 16> rotetemat = Mat44::multMatrixf(rotetematx, rotetematy);
     std::array<float, 16> translatemat = Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
     gGlobalSpaceObj.mModelMat = Mat44::scalef(translatemat, {gGlobalSpaceObj.mScale, gGlobalSpaceObj.mScale, gGlobalSpaceObj.mScale});
+    /* モデル行列を更新したので再計算 */
+    std::array<float, 16> vpmat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
+    gGlobalSpaceObj.mMvpMat     = Mat44::multMatrixf(vpmat, gGlobalSpaceObj.mModelMat);
 
     /* 正規行列を算出 */
     std::array<float, 16> invertMat = Mat44::invertf(gGlobalSpaceObj.mModelMat);
@@ -204,6 +209,9 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setRotate(JNIEnv *env, jcla
     std::array<float, 16> rotetemat = Mat44::multMatrixf(rotetematx, rotetematy);
     std::array<float, 16> translatemat = Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
     gGlobalSpaceObj.mModelMat = Mat44::scalef(translatemat, {gGlobalSpaceObj.mScale, gGlobalSpaceObj.mScale, gGlobalSpaceObj.mScale});
+    /* モデル行列を更新したので再計算 */
+    std::array<float, 16> vpmat = Mat44::multMatrixf(gGlobalSpaceObj.mProjectionMat, gGlobalSpaceObj.mViewMat);
+    gGlobalSpaceObj.mMvpMat     = Mat44::multMatrixf(vpmat, gGlobalSpaceObj.mModelMat);
 
     /* 正規行列を算出 */
     std::array<float, 16> invertMat = Mat44::invertf(gGlobalSpaceObj.mModelMat);
