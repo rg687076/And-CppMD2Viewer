@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <tuple>
 #include <android/log.h>
 #include "Md2Parts.h"
 #include "Md2Obj.h"
@@ -44,15 +45,18 @@ bool Md2Obj::InitModel(std::map<std::string, Md2ModelInfo> &md2models) {
 }
 
 /* Md2モデル描画 */
-bool Md2Obj::DrawModel(std::map<std::string, Md2ModelInfo> &md2models, const Md2Obj::ArgType &GlobalSpace) {
-    const std::array<float, 16> &aMvpMat     = std::get<0>(GlobalSpace);
-    const std::array<float, 16> &amNormalMat = std::get<1>(GlobalSpace);
-    float Scale                              = std::get<2>(GlobalSpace);
-    float Rotatex                            = std::get<3>(GlobalSpace);
-    float Rotatey                            = std::get<4>(GlobalSpace);
+bool Md2Obj::DrawModel(std::map<std::string, Md2ModelInfo> &md2models, const Md2Obj::ArgType &globalSpacePrm, float elapsedtimeMs) {
+    const std::array<float, 16> &aMvpMat     = std::get<0>(globalSpacePrm);
+    const std::array<float, 16> &amNormalMat = std::get<1>(globalSpacePrm);
+    float Scale                              = std::get<2>(globalSpacePrm);
+    float Rotatex                            = std::get<3>(globalSpacePrm);
+    float Rotatey                            = std::get<4>(globalSpacePrm);
+
+    /* glEnable(GL_DEPTH_TEST); */
+    GlObj::enable(GL_DEPTH_TEST);
 
     for(auto &[key, value] : md2models) {
-        value.DrawModel(aMvpMat, amNormalMat, Scale, Rotatex, Rotatey);
+        value.DrawModel(aMvpMat, amNormalMat, Scale, Rotatex, Rotatey, elapsedtimeMs);
     }
     return true;
 }
@@ -169,7 +173,7 @@ bool Md2ModelInfo::InitShaders() {
     mProgramId = progid;
 
     /* シェーダのAttributeにデータ一括設定 */
-    auto[retbool, retAnimFrameS2e, retVbo, retCurPosAttrib, retNextPosAttrib, retTexCoordAttrib] = GlObj::setAttribute(mProgramId, mMdlData.numTotalFrames, mMdlData.vertexList, mMdlData.polyIndex, mMdlData.st);
+    auto[retbool, retAnimFrameS2e, retVboID, retCurPosAttrib, retNextPosAttrib, retTexCoordAttrib] = GlObj::setAttribute(mProgramId, mMdlData.numTotalFrames, mMdlData.vertexList, mMdlData.polyIndex, mMdlData.st);
     if( !retbool) {
         GlObj::DeleteShaders(mProgramId);
         mProgramId =-1;
@@ -177,7 +181,7 @@ bool Md2ModelInfo::InitShaders() {
     }
 
     mFrameIndices  = std::move(retAnimFrameS2e);
-    mVbo           = retVbo;
+    mVboId         = retVboID;
     mCurPosAttrib  = retCurPosAttrib;
     mNextPosAttrib = retNextPosAttrib;
     mTexCoordAttrib= retTexCoordAttrib;
@@ -185,8 +189,49 @@ bool Md2ModelInfo::InitShaders() {
     return true;
 }
 
-bool Md2ModelInfo::DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey) {
+bool Md2ModelInfo::DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey, float elapsedtimeMs) {
+    static const int START_FRAME= 0;
+    static const int END_FRAME  = (int)mFrameIndices.size() - 1;
 
+    /* 補完係数の計算 */
+    static std::map<std::string, float> interpolates = {{"female", -0.1f}, {"grunt", -0.1f}};   /* 本来は経過時間と絡めて算出すべきだけど、今回はズルした。単純インクリメントで、対応 */
+    float interpolate = interpolates.at(mName);
+    if(interpolate >= 1.0f) {
+        interpolate = 0.0f;
+        if(mCurrentFrame >= END_FRAME)
+            mCurrentFrame = START_FRAME;
+        else
+            mCurrentFrame++;
+    }
+    interpolate += 0.1f;
+    interpolates.at(mName) = interpolate;
+
+    /* glActiveTexture() → glBindTexture() */
+    GlObj::activeTexture(GL_TEXTURE0);
+    GlObj::bindTexture(GL_TEXTURE_2D, mTexId);
+
+    /* glUseProgram() */
+    GlObj::useProgram(mProgramId);
+
+    /* glUniformXxxxx() */
+    GlObj::setUniform(mProgramId, "mvpmat", mvpmat);
+    GlObj::setUniform(mProgramId, "interpolate", interpolate);
+
+    /* glBindBuffer(有効化) */
+    GlObj::bindBuffer(GL_ARRAY_BUFFER, mVboId);
+
+    /* glVertexAttribPointer()×3(現在頂点s,次頂点s,UV座標) */
+    GlObj::vertexAttribPointer(mCurPosAttrib  , 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(0));
+    GlObj::vertexAttribPointer(mNextPosAttrib , 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+    GlObj::vertexAttribPointer(mTexCoordAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(6 * sizeof(GLfloat)));
+
+    /* glDrawArrays() */
+    int sidx = mFrameIndices[mCurrentFrame].first;
+    int size = mFrameIndices[mCurrentFrame].second - mFrameIndices[mCurrentFrame].first - 1;
+    GlObj::drawArrays(GL_TRIANGLES, sidx, size);
+
+    /* glBindBuffer(無効化) */
+    GlObj::bindBuffer(GL_ARRAY_BUFFER, NULL);
 
     return true;
 }

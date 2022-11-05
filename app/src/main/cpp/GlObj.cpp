@@ -6,6 +6,8 @@
 #include "Md2Parts.h"
 #include "GlObj.h"
 
+std::map<std::string, GLint> GlObj::mUniformLocations = {};
+
 void GlObj::GlInit() {
     __android_log_print(ANDROID_LOG_INFO,"aaaaa","GL_VERSION                  : %s\n", glGetString(GL_VERSION));
     __android_log_print(ANDROID_LOG_INFO,"aaaaa","GL_VENDOR                   : %s\n", glGetString(GL_VENDOR));
@@ -175,7 +177,7 @@ RetShaderAttribs GlObj::setAttribute(GLuint programId, int totalframes,
                                      const std::vector<vertex> &vertexs, const std::vector<mesh> &polyIndexs,const std::vector<texstcoord> &sts) {
     /* 返却値 */
     std::unordered_map<int, std::pair<int, int>> retAnimFrameS2e;
-    GLuint retVbo = -1;
+    GLuint retVboId = -1;
     GLuint retCurPosAttrib   = glGetAttribLocation( programId, "pos");
     GLuint retNextPosAttrib  = glGetAttribLocation( programId, "nextPos");
     GLuint retTexCoordAttrib = glGetAttribLocation( programId, "texCoord");
@@ -216,9 +218,9 @@ RetShaderAttribs GlObj::setAttribute(GLuint programId, int totalframes,
     }
 
     size_t numVertexs = numPolys * 3 + 1;
-    glGenBuffers(1, &retVbo);
+    glGenBuffers(1, &retVboId);
 
-    glBindBuffer(GL_ARRAY_BUFFER, retVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, retVboId);
     glBufferData(GL_ARRAY_BUFFER, numVertexs * sizeof(float) * 8 * totalframes, &wkMd2Vertices[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(retCurPosAttrib  , 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)nullptr);
@@ -231,10 +233,57 @@ RetShaderAttribs GlObj::setAttribute(GLuint programId, int totalframes,
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    return {true, retAnimFrameS2e, retVbo, retCurPosAttrib, retNextPosAttrib, retTexCoordAttrib};
+    return {true, retAnimFrameS2e, retVboId, retCurPosAttrib, retNextPosAttrib, retTexCoordAttrib};
 }
 
 /* ウィンドウのサイズの定義 */
 void GlObj::setViewport(int x, int y, int width, int height) {
     glViewport(x, y, width, height);
+}
+
+void GlObj::enable(GLenum cap) {
+    glEnable(cap);
+}
+
+void GlObj::activeTexture(GLenum texture) {
+    glActiveTexture(texture);
+}
+
+void GlObj::bindTexture(GLenum target, GLuint textureid) {
+    glBindTexture(target, textureid);
+}
+
+void GlObj::useProgram(GLuint programId) {
+    glUseProgram(programId);
+}
+
+GLint GlObj::getUniformId(GLuint programId, const GLchar *name) {
+    auto itr = mUniformLocations.find(name);
+    if(itr == mUniformLocations.end()) {
+        mUniformLocations[name] = glGetUniformLocation(programId, name);
+    }
+    GLint uniformid = mUniformLocations[name];
+    return uniformid;
+}
+
+void GlObj::setUniform(GLuint programId, const GLchar *name, const std::array<float, 16> &mat44) {
+    GLint uniformid = GlObj::getUniformId(programId, name);
+    glUniformMatrix4fv(uniformid, 1, GL_FALSE, &(mat44[0]));
+}
+
+void GlObj::setUniform(GLuint programId, const GLchar *name, GLfloat valf) {
+    GLint uniformid = GlObj::getUniformId(programId, name);
+    glUniform1f(uniformid, valf);
+}
+
+void GlObj::bindBuffer(GLenum target, GLuint buffer) {
+    glBindBuffer(target, buffer);
+}
+
+void GlObj::vertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer) {
+    glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+}
+
+void GlObj::drawArrays(GLenum mode, GLint first, GLsizei count) {
+    glDrawArrays(mode, first, count);
 }

@@ -13,8 +13,8 @@ struct md2header {
 
     int num_skins;      /* texture数 */
     int num_vertexs;    /* 頂点数(3角形とかn角形とか) */
-    int num_st;         /* texture座標数 */
-    int num_polys;       /* ポリゴン数 */
+    int num_st;         /* UV座標数 */
+    int num_polys;      /* ポリゴン数 */
     int num_glcmds;     /* openglコマンド数 */
     int num_totalframes;/* 総フレーム数 */
 

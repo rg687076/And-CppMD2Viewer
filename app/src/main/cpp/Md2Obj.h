@@ -40,7 +40,7 @@ public:
     bool LoadTexture(); /* AssetsからTextureデータを読込む */
     bool InitTexture(); /* TextureデータをOpenGLで使えるようにする */
     bool InitShaders(); /* シェーダをOpenGLで使えるようにする */
-    bool DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey);
+    bool DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey, float elapsedtimeMs);
 
 public:
     std::string         mName = {0};
@@ -56,10 +56,11 @@ public:
     std::array<float, 3>    mPosition = {0, 0, 0};
     /* アニメ関連 */
     std::unordered_map<int, std::pair<int, int>> mFrameIndices = {};
+    int mCurrentFrame = 0;
     /* テクスチャ関連 */
     GLuint mTexId = -1;
     /* シェーダー関連 */
-    GLuint mVbo           = -1;
+    GLuint mVboId           = -1;
     GLuint mProgramId     = -1;
     GLuint mCurPosAttrib  = -1;
     GLuint mNextPosAttrib = -1;
@@ -71,7 +72,7 @@ public:
     static bool LoadModel(std::map<std::string, Md2ModelInfo> &md2models);
     static bool InitModel(std::map<std::string, Md2ModelInfo> &md2models);
     using ArgType = std::tuple<const std::array<float, 16> &, const std::array<float, 16> &, float, float, float>;
-    static bool DrawModel(std::map<std::string, Md2ModelInfo> &md2models, const ArgType &GlobalSpace);
+    static bool DrawModel(std::map<std::string, Md2ModelInfo> &md2models, const ArgType &globalSpacePrm, float elapsedtimeMs);
 };
 
 #endif //CPPMD2VIEWER_MD2OBJ_H
