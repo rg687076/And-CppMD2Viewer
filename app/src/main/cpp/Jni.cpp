@@ -15,11 +15,12 @@
 extern "C" {
 #endif
 
-std::map<std::string, Md2ModelInfo> gMd2models;     /* Md2モデルデータ実体 */
-std::mutex                          gMutex;         /* onStart()完了待ちmutex */
-GlobalSpaceObj                      gGlobalSpacePrm;/* onStart()完了待ちmutex */
+std::map<std::string, Md2Model>       gMd2Models;     /* Md2モデルデータ実体 */
+std::mutex                            gMutex;         /* onStart()完了待ちmutex */
+GlobalSpaceObj                        gGlobalSpacePrm;/* グローバル空間パラメータ */
 std::chrono::system_clock::time_point gPreStartTime;/* 前回開始時刻 */
 
+/* onStart */
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
                                                                  jobjectArray modelnames, jobjectArray md2filenames, jobjectArray texfilenames,
                                                                  jobjectArray vshfilenames, jobjectArray fshfilenames) {
@@ -80,12 +81,12 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         }
 
         /* Md2model追加 */
-        gMd2models.emplace(modelnamechar, Md2ModelInfo{ .mName=modelnamechar,
-                                                        .mWkMd2BinData=std::move(wk[0].second),
-                                                        .mWkTexBinData=std::move(wk[1].second),
-                                                        /* shaderはデータを文字列に変換して格納 */
-                                                        .mWkVshStrData=std::string(wk[2].second.begin(), wk[2].second.end()),
-                                                        .mWkFshStrData=std::string(wk[3].second.begin(), wk[3].second.end())});
+        gMd2Models.emplace(modelnamechar, Md2Model{ .mName=modelnamechar,
+                                                    .mWkMd2BinData=std::move(wk[0].second),
+                                                    .mWkTexBinData=std::move(wk[1].second),
+                                                    /* shaderはデータを文字列に変換して格納 */
+                                                    .mWkVshStrData=std::string(wk[2].second.begin(), wk[2].second.end()),
+                                                    .mWkFshStrData=std::string(wk[3].second.begin(), wk[3].second.end())});
 
         /* char解放 */
         env->ReleaseStringUTFChars(modelnamejstr  , modelnamechar);
@@ -103,7 +104,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     }
 
     /* 初期化 */
-    bool ret = Md2Obj::LoadModel(gMd2models);
+    bool ret = Md2Obj::LoadModel(gMd2Models);
     if(!ret) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::LoadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
@@ -113,6 +114,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     return true;
 }
 
+/* onSurfaceCreated */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *env, jclass clazz) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     gMutex.lock();  /* onStart()の実行終了を待つ */
@@ -121,7 +123,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *en
     GlObj::GlInit();
 
     /* GL系モデル初期化(GL系は、このタイミングでないとエラーになる) */
-    bool ret = Md2Obj::InitModel(gMd2models);
+    bool ret = Md2Obj::InitModel(gMd2Models);
     if(!ret)
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
@@ -141,6 +143,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *en
     return;
 }
 
+/* onSurfaceChanged */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "w=%d h=%d %s %s(%d)", width, height, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
@@ -155,6 +158,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *en
     return;
 }
 
+/* onDrawFrame */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jclass clazz) {
 //    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     Md2Obj::ArgType globalprm = {gGlobalSpacePrm.mMvpMat, gGlobalSpacePrm.mNormalMatrix, gGlobalSpacePrm.mScale, gGlobalSpacePrm.mRotatex, gGlobalSpacePrm.mRotatey};
@@ -165,7 +169,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jc
     gPreStartTime = stime;
 
     /* Md2モデル描画 */
-    bool ret = Md2Obj::DrawModel(gMd2models, globalprm, elapsedtimeMs);
+    bool ret = Md2Obj::DrawModel(gMd2Models, globalprm, elapsedtimeMs);
     if(!ret) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::DrawModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return;
@@ -176,6 +180,19 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jc
 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onStop(JNIEnv *env, jclass clazz) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+    /* glDeleteTextures() */
+    const std::map<std::string, Md2Model> &md2models = gMd2Models;
+    const std::vector<unsigned int> &texids = []() {
+                                                        std::vector<unsigned int> retvec = {};
+                                                        retvec.reserve(md2models.size());
+                                                        for(auto &[key, value] : md2models) {
+                                                            retvec.push_back(value.mTexId);
+                                                        }
+                                                        return retvec;
+                                                    }();
+    GlObj::deleteTextures((GLsizei)texids.size(), texids.data());
+
     return;
 }
 
@@ -183,8 +200,8 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onStop(JNIEnv *env, jclass 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setModelPosition(JNIEnv *env, jclass clazz, jstring modelnamejstr, jfloat x, jfloat y, jfloat z) {
     const char *modelnamechar = env->GetStringUTFChars(modelnamejstr, nullptr);
 
-    std::map<std::string, Md2ModelInfo>::iterator itr = gMd2models.find(modelnamechar);
-    if(itr == gMd2models.end()) {
+    std::map<std::string, Md2Model>::iterator itr = gMd2Models.find(modelnamechar);
+    if(itr == gMd2Models.end()) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "warning!! 指定キャラクタ(=%s)は存在しない。 %s %s(%d)", modelnamechar, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return;
     }

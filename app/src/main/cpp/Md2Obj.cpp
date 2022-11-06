@@ -9,7 +9,7 @@
 #include "GlObj.h"
 
 /* Md2モデル読込み(model読込,tex読込) */
-bool Md2Obj::LoadModel(std::map<std::string, Md2ModelInfo> &md2models) {
+bool Md2Obj::LoadModel(std::map<std::string, Md2Model> &md2models) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
     for(auto &[key, value] : md2models) {
@@ -29,7 +29,7 @@ bool Md2Obj::LoadModel(std::map<std::string, Md2ModelInfo> &md2models) {
 }
 
 /* Md2モデル初期化(特にOpenGL系は、onSurfaceCreated()ドリブンで動作しないとエラーになる) */
-bool Md2Obj::InitModel(std::map<std::string, Md2ModelInfo> &md2models) {
+bool Md2Obj::InitModel(std::map<std::string, Md2Model> &md2models) {
     for(auto &[key, value] : md2models) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model Init start (%s). %s %s(%d)", value.mName.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         /* テクスチャInit */
@@ -45,7 +45,7 @@ bool Md2Obj::InitModel(std::map<std::string, Md2ModelInfo> &md2models) {
 }
 
 /* Md2モデル描画 */
-bool Md2Obj::DrawModel(std::map<std::string, Md2ModelInfo> &md2models, const Md2Obj::ArgType &globalSpacePrm, float elapsedtimeMs) {
+bool Md2Obj::DrawModel(std::map<std::string, Md2Model> &md2models, const Md2Obj::ArgType &globalSpacePrm, float elapsedtimeMs) {
     const std::array<float, 16> &aMvpMat     = std::get<0>(globalSpacePrm);
     const std::array<float, 16> &amNormalMat = std::get<1>(globalSpacePrm);
     float Scale                              = std::get<2>(globalSpacePrm);
@@ -61,14 +61,18 @@ bool Md2Obj::DrawModel(std::map<std::string, Md2ModelInfo> &md2models, const Md2
     return true;
 }
 
-Md2ModelInfo::~Md2ModelInfo() {
+void Md2Model::SetPosition(float x, float y, float z) {
+	mPosition = std::array<float, 3>{x, y, z};
+}
+
+Md2Model::~Md2Model() {
     std::vector<char>().swap(mWkMd2BinData);
     std::vector<char>().swap(mWkTexBinData);
     std::vector<char>().swap(mWkRgbaData);
     std::unordered_map<int, std::pair<int, int>>().swap(mFrameIndices);
 }
 
-bool Md2ModelInfo::LoadModel() {
+bool Md2Model::LoadModel() {
     /* MD2ヘッダ */
     md2header *header = (md2header*)mWkMd2BinData.data();
 
@@ -137,20 +141,20 @@ bool Md2ModelInfo::LoadModel() {
 }
 
 /* AssetsからTextureデータを読込む */
-bool Md2ModelInfo::LoadTexture() {
-    auto [retbool, w, h, rgbadata] = TexObj::LoadTexture(mWkTexBinData);
+bool Md2Model::LoadTexture() {
+    auto [retbool, w, h, rgbabindata] = TexObj::LoadTexture(mWkTexBinData);
     if(retbool) {
         mWkWidth = w;
         mWkHeight= h;
-        mWkRgbaData = rgbadata;
+        mWkRgbaData = std::move(rgbabindata);
     }
     return retbool;
 }
 
 /* TextureデータをOpenGLで使えるようにする */
-bool Md2ModelInfo::InitTexture() {
+bool Md2Model::InitTexture() {
     /* OpenGLのTexture初期化 */
-    auto[boolret, texid] = GlObj::TexInit(mWkWidth, mWkHeight, mWkRgbaData.data());
+    auto[boolret, texid] = GlObj::InitTexture(mWkWidth, mWkHeight, mWkRgbaData.data());
     if(boolret)
         mTexId = texid;
 
@@ -163,7 +167,7 @@ bool Md2ModelInfo::InitTexture() {
 }
 
 /* シェーダをOpenGLで使えるようにする */
-bool Md2ModelInfo::InitShaders() {
+bool Md2Model::InitShaders() {
     /* シェーダ読込み */
     auto[retboot, progid] = GlObj::LoadShaders(mWkVshStrData, mWkFshStrData);
     if( !retboot) {
@@ -189,7 +193,7 @@ bool Md2ModelInfo::InitShaders() {
     return true;
 }
 
-bool Md2ModelInfo::DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey, float elapsedtimeMs) {
+bool Md2Model::DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey, float elapsedtimeMs) {
     static const int START_FRAME= 0;
     static const int END_FRAME  = (int)mFrameIndices.size() - 1;
 

@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 if(mScale > 5) mScale = 5;
                 else if(mScale < 0.2) mScale = 0.2f;
                 Jni.setScale(mScale);
-                return super.onScale(detector);
+                return true;
             }
 
             @Override
