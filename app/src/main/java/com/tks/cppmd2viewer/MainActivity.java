@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
                 Jni.onSurfaceCreated();
                 Jni.setModelPosition(mDrwModelNames.get(0), 0.0f, 0.0f, 0.0f);
-                Jni.setModelPosition(mDrwModelNames.get(1), 0.1f, 0.1f, 0.1f);
+                Jni.setModelPosition(mDrwModelNames.get(1), 1.0f, 1.0f, 1.0f);
            }
 
             @Override
@@ -171,8 +171,8 @@ public class MainActivity extends AppCompatActivity {
                 float factor = 100f / mHeight;
                 float dx = factor * (event.getX() - mLastX);
                 float dy = factor * (event.getY() - mLastY);
-                mTouchAngleX = Math.max(Math.min(mTouchAngleX+dy,90f),-90f);
-                mTouchAngleY += dx;
+                mTouchAngleX = Math.max(Math.min(mTouchAngleX+dx,90f),-90f);
+                mTouchAngleY += dy;
                 Jni.setRotate(mTouchAngleX, mTouchAngleY);
                 mLastX = event.getX();
                 mLastY = event.getY();

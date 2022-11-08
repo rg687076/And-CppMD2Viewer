@@ -253,8 +253,8 @@ void Md2Model::setPosition(float x, float y, float z) {
 }
 
 void Md2Model::setRotate(float x, float y) {
-	mRotatex += x;
-	mRotatey -= y;
+	mRotatex = x;
+	mRotatey = y;
 
 	/* モデル行列更新 */
     std::array<float, 16> rotetematx  = Mat44::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
