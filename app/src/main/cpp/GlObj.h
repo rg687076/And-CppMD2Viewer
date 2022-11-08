@@ -27,6 +27,7 @@ public:
                                          const std::vector<vertex> &vertexs, const std::vector<mesh> &polyIndexs, const std::vector<texstcoord> &sts);
     static void DeleteShaders(GLuint programId);
     static void setViewport(int x, int y, int width, int height);
+    static void clear(GLbitfield mask);
     static void enable(GLenum cap);
     static void activeTexture(GLenum texture);
     static void bindTexture(GLenum target, GLuint textureid);

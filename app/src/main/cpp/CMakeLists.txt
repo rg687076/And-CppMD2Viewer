@@ -10,5 +10,5 @@ add_library(matobj SHARED MatObj.cpp)
 find_library(log-lib log)
 
 target_link_libraries(jni ${log-lib} android md2model globj matobj)
-target_link_libraries(md2model ${log-lib} globj)
+target_link_libraries(md2model ${log-lib} globj matobj)
 target_link_libraries(globj ${log-lib} EGL GLESv2)

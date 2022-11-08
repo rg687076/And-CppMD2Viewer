@@ -3,22 +3,22 @@
 #include <map>
 #include <mutex>
 #include <chrono>
+#include <tuple>
 #include <jni.h>
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
 #include "Md2Obj.h"
 #include "GlObj.h"
 #include "GlobalSpaceObj.h"
-#include "MatObj.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-std::map<std::string, Md2Model>       gMd2Models;     /* Md2モデルデータ実体 */
-std::mutex                            gMutex;         /* onStart()完了待ちmutex */
-GlobalSpaceObj                        gGlobalSpacePrm;/* グローバル空間パラメータ */
-std::chrono::system_clock::time_point gPreStartTime;/* 前回開始時刻 */
+std::map<std::string, Md2Model>       gMd2Models;       /* Md2モデルデータ実体 */
+std::mutex                            gMutex;           /* onStart()完了待ちmutex */
+GlobalSpaceObj                        gGlobalSpacePrm;  /* グローバル空間パラメータ */
+std::chrono::system_clock::time_point gPreStartTime;    /* 前回開始時刻 */
 
 /* onStart */
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
@@ -106,7 +106,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     /* 初期化 */
     bool ret = Md2Obj::LoadModel(gMd2Models);
     if(!ret) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::LoadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::loadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
 
@@ -127,17 +127,21 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *en
     if(!ret)
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
-    /* View行列を更新 */
     std::array<float,  3> camerapos = {0.0f, 250.0f, 1000.0f};
     std::array<float,  3> targetpos = {0.0f, 0.0f, 0.0f};
     std::array<float,  3> uppos     = {0.0f, 1.0f, 0.0f};
+    /* View行列を更新 */
     gGlobalSpacePrm.mCameraPos = camerapos;
     gGlobalSpacePrm.mTargetPos = targetpos;
     gGlobalSpacePrm.mUpPos     = uppos;
     gGlobalSpacePrm.mViewMat   = Mat44::getLookAtf(camerapos, targetpos, uppos);
-    /* ビュー行列を更新したので再計算 */
-    std::array<float, 16> vpmat = Mat44::multMatrixf(gGlobalSpacePrm.mProjectionMat, gGlobalSpacePrm.mViewMat);
-    gGlobalSpacePrm.mMvpMat     = Mat44::multMatrixf(vpmat, gGlobalSpacePrm.mModelMat);
+    /* ViewProjection行列を更新 */
+    gGlobalSpacePrm.mVpMat = Mat44::multMatrixf(gGlobalSpacePrm.mProjectionMat, gGlobalSpacePrm.mViewMat);
+    /* View投影行列の変更を通知 */
+    for(auto &[key, value] : gMd2Models)
+        value.setVpMat(gGlobalSpacePrm.mVpMat);
+
+    gMd2Models.at("grunt").setPosition(0.0f, 6.5f, -25.0f);
 
     gMutex.unlock();
     return;
@@ -150,10 +154,13 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *en
     /* setViewport() */
     GlObj::setViewport(0, 0, width, height);
 
+    /* 投影行列を更新 */
     gGlobalSpacePrm.mProjectionMat  = Mat44::getPerspectivef(30.0, ((float)width)/((float)height), 1.0, 5000.0);
-    /* 投影行列を更新したので再計算 */
-    std::array<float, 16> vpmat     = Mat44::multMatrixf(gGlobalSpacePrm.mProjectionMat, gGlobalSpacePrm.mViewMat);
-    gGlobalSpacePrm.mMvpMat         = Mat44::multMatrixf(vpmat, gGlobalSpacePrm.mModelMat);
+    /* View投影行列を更新 */
+    gGlobalSpacePrm.mVpMat  = Mat44::multMatrixf(gGlobalSpacePrm.mProjectionMat, gGlobalSpacePrm.mViewMat);
+    /* View投影行列の変更を通知 */
+    for(auto &[key, value] : gMd2Models)
+        value.setVpMat(gGlobalSpacePrm.mVpMat);
 
     return;
 }
@@ -161,7 +168,6 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *en
 /* onDrawFrame */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jclass clazz) {
 //    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-    Md2Obj::ArgType globalprm = {gGlobalSpacePrm.mMvpMat, gGlobalSpacePrm.mNormalMatrix, gGlobalSpacePrm.mScale, gGlobalSpacePrm.mRotatex, gGlobalSpacePrm.mRotatey};
 
     /* 前回描画からの経過時間を算出 */
     std::chrono::system_clock::time_point stime = std::chrono::system_clock::now();
@@ -169,9 +175,9 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jc
     gPreStartTime = stime;
 
     /* Md2モデル描画 */
-    bool ret = Md2Obj::DrawModel(gMd2Models, globalprm, elapsedtimeMs);
+    bool ret = Md2Obj::DrawModel(gMd2Models, gGlobalSpacePrm.mNormalMatrix, elapsedtimeMs);
     if(!ret) {
-        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::DrawModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::drawModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return;
     }
 
@@ -181,17 +187,33 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jc
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onStop(JNIEnv *env, jclass clazz) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
-    /* glDeleteTextures() */
-    const std::map<std::string, Md2Model> &md2models = gMd2Models;
-    const std::vector<unsigned int> &texids = []() {
-                                                        std::vector<unsigned int> retvec = {};
-                                                        retvec.reserve(md2models.size());
-                                                        for(auto &[key, value] : md2models) {
-                                                            retvec.push_back(value.mTexId);
-                                                        }
-                                                        return retvec;
-                                                    }();
-    GlObj::deleteTextures((GLsizei)texids.size(), texids.data());
+/* 注 : この処理は、OpenGLのスレッドでないので、OpenGL系の終了処理はできない。
+ *      OpenGL系の終了処理は、GlSurfaceViewのdestory系処理で実行すべきだが、AndroidのGlSurfaceView::renderには
+ *      その関数がない。GL系の終了処理は不要なんだと。
+ *      それは、気持ち悪いので、今度実装する時は、GlSurfaceViewでなく、SurfaceViewで実装した方がいいかも...
+ */
+//    /* glDeleteTextures() */
+//    const std::map<std::string, Md2Model> &md2models = gMd2Models;
+//    const std::tuple<std::vector<unsigned int>, std::vector<unsigned int>> &ids = []() {
+//                                                        std::vector<unsigned int> rettexids = {};
+//                                                        std::vector<unsigned int> retprogids = {};
+//                                                        rettexids.reserve(md2models.size());
+//                                                        retprogids.reserve(md2models.size());
+//                                                        for(auto &[key, value] : md2models) {
+//                                                            rettexids.push_back(value.mTexId);
+//                                                            retprogids.push_back(value.mProgramId);
+//                                                        }
+//                                                        return std::make_tuple(rettexids, retprogids);
+//                                                    }();
+//    /* テクスチャ解放 */
+//    const std::vector<unsigned int> &texids = std::get<0>(ids);
+//    GlObj::deleteTextures((GLsizei)texids.size(), texids.data());
+//
+//    /* シェーダ解放 */
+//    const std::vector<unsigned int> &progids= std::get<1>(ids);
+//    for(unsigned int progid : progids) {
+//        GlObj::deleteProgram(progid);
+//    }
 
     return;
 }
@@ -217,44 +239,13 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setModelPosition(JNIEnv *en
 
 /* モデルデータ拡縮設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
-    gGlobalSpacePrm.mScale = scale;
-
-    /* モデル行列を算出 */
-    std::array<float, 16> rotetematx = Mat44::getRotatef(-gGlobalSpacePrm.mRotatex, 1.0f, 0.0f, 0.0f);
-    std::array<float, 16> rotetematy = Mat44::getRotatef(gGlobalSpacePrm.mRotatey, 0.0f, 1.0f, 0.0f);
-    std::array<float, 16> rotetemat = Mat44::multMatrixf(rotetematx, rotetematy);
-    std::array<float, 16> translatemat = Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
-    gGlobalSpacePrm.mModelMat = Mat44::scalef(translatemat, {gGlobalSpacePrm.mScale, gGlobalSpacePrm.mScale, gGlobalSpacePrm.mScale});
-    /* モデル行列を更新したので再計算 */
-    std::array<float, 16> vpmat = Mat44::multMatrixf(gGlobalSpacePrm.mProjectionMat, gGlobalSpacePrm.mViewMat);
-    gGlobalSpacePrm.mMvpMat     = Mat44::multMatrixf(vpmat, gGlobalSpacePrm.mModelMat);
-
-    /* 正規行列を算出 */
-    std::array<float, 16> invertMat = Mat44::invertf(gGlobalSpacePrm.mModelMat);
-    gGlobalSpacePrm.mNormalMatrix = Mat44::transposef(invertMat);
-
+    Md2Obj::SetScale(gMd2Models, scale);
     return;
 }
 
 /* モデルデータ回転設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setRotate(JNIEnv *env, jclass clazz, jfloat rotatex, jfloat rotatey) {
-    gGlobalSpacePrm.mRotatex = rotatex;
-    gGlobalSpacePrm.mRotatey = rotatey;
-
-    /* モデル行列を算出 */
-    std::array<float, 16> rotetematx = Mat44::getRotatef(-gGlobalSpacePrm.mRotatex, 1.0f, 0.0f, 0.0f);
-    std::array<float, 16> rotetematy = Mat44::getRotatef(gGlobalSpacePrm.mRotatey, 0.0f, 1.0f, 0.0f);
-    std::array<float, 16> rotetemat = Mat44::multMatrixf(rotetematx, rotetematy);
-    std::array<float, 16> translatemat = Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
-    gGlobalSpacePrm.mModelMat = Mat44::scalef(translatemat, {gGlobalSpacePrm.mScale, gGlobalSpacePrm.mScale, gGlobalSpacePrm.mScale});
-    /* モデル行列を更新したので再計算 */
-    std::array<float, 16> vpmat = Mat44::multMatrixf(gGlobalSpacePrm.mProjectionMat, gGlobalSpacePrm.mViewMat);
-    gGlobalSpacePrm.mMvpMat     = Mat44::multMatrixf(vpmat, gGlobalSpacePrm.mModelMat);
-
-    /* 正規行列を算出 */
-    std::array<float, 16> invertMat = Mat44::invertf(gGlobalSpacePrm.mModelMat);
-    gGlobalSpacePrm.mNormalMatrix = Mat44::transposef(invertMat);
-
+    Md2Obj::SetRotate(gMd2Models, rotatex, rotatey);
     return;
 }
 

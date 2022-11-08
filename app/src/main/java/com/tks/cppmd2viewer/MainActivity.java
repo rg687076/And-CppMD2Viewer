@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
                 Jni.onSurfaceCreated();
                 Jni.setModelPosition(mDrwModelNames.get(0), 0.0f, 0.0f, 0.0f);
-                Jni.setModelPosition(mDrwModelNames.get(1), 0.0f, 6.5f, -25.0f);
+                Jni.setModelPosition(mDrwModelNames.get(1), 0.1f, 0.1f, 0.1f);
            }
 
             @Override

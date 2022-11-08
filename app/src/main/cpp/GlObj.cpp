@@ -242,6 +242,10 @@ void GlObj::setViewport(int x, int y, int width, int height) {
     glViewport(x, y, width, height);
 }
 
+void GlObj::clear(GLbitfield mask) {
+    glClear(mask);
+}
+
 void GlObj::enable(GLenum cap) {
     glEnable(cap);
 }

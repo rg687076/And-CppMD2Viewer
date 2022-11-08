@@ -1,12 +1,10 @@
-#include <iostream>
 #include <string>
-#include <sstream>
-#include <tuple>
 #include <android/log.h>
 #include "Md2Parts.h"
 #include "Md2Obj.h"
 #include "TexObj.h"
 #include "GlObj.h"
+#include "MatObj.h"
 
 /* Md2モデル読込み(model読込,tex読込) */
 bool Md2Obj::LoadModel(std::map<std::string, Md2Model> &md2models) {
@@ -15,11 +13,11 @@ bool Md2Obj::LoadModel(std::map<std::string, Md2Model> &md2models) {
     for(auto &[key, value] : md2models) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model load start (%s). %s %s(%d)", value.mName.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         /* MD2モデルLoad */
-        bool ret = value.LoadModel();
+        bool ret = value.loadModel();
         std::vector<char>().swap(value.mWkMd2BinData);
         if( !ret) return false;
         /* テクスチャLoad */
-        bool ret1 = value.LoadTexture();
+        bool ret1 = value.loadTexture();
         std::vector<char>().swap(value.mWkTexBinData);
         if( !ret1) return false;
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model and Texture LOADED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
@@ -33,11 +31,11 @@ bool Md2Obj::InitModel(std::map<std::string, Md2Model> &md2models) {
     for(auto &[key, value] : md2models) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model Init start (%s). %s %s(%d)", value.mName.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         /* テクスチャInit */
-        bool ret2 = value.InitTexture();
+        bool ret2 = value.initTexture();
         std::vector<char>().swap(value.mWkTexBinData);
         if( !ret2) return false;
         /* シェーダ初期化 */
-        bool ret3 = value.InitShaders();
+        bool ret3 = value.initShaders();
         if( !ret3) return false;
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Shader Init end(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     }
@@ -45,24 +43,31 @@ bool Md2Obj::InitModel(std::map<std::string, Md2Model> &md2models) {
 }
 
 /* Md2モデル描画 */
-bool Md2Obj::DrawModel(std::map<std::string, Md2Model> &md2models, const Md2Obj::ArgType &globalSpacePrm, float elapsedtimeMs) {
-    const std::array<float, 16> &aMvpMat     = std::get<0>(globalSpacePrm);
-    const std::array<float, 16> &amNormalMat = std::get<1>(globalSpacePrm);
-    float Scale                              = std::get<2>(globalSpacePrm);
-    float Rotatex                            = std::get<3>(globalSpacePrm);
-    float Rotatey                            = std::get<4>(globalSpacePrm);
+bool Md2Obj::DrawModel(std::map<std::string, Md2Model> &md2models, const std::array<float, 16> &amNormalMat, float elapsedtimeMs) {
+//  const std::array<float, 16> &amNormalMat = std::get<1>(globalSpacePrm);
 
+	/* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+    GlObj::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     /* glEnable(GL_DEPTH_TEST); */
     GlObj::enable(GL_DEPTH_TEST);
 
     for(auto &[key, value] : md2models) {
-        value.DrawModel(aMvpMat, amNormalMat, Scale, Rotatex, Rotatey, elapsedtimeMs);
+        value.drawModel(amNormalMat, elapsedtimeMs);
     }
     return true;
 }
 
-void Md2Model::SetPosition(float x, float y, float z) {
-	mPosition = std::array<float, 3>{x, y, z};
+void Md2Obj::SetRotate(std::map<std::string, Md2Model> &md2models, float x, float y) {
+	for(auto &[key, value] : md2models) {
+		value.setRotate(x, y);
+	}
+	return;
+}
+
+void Md2Obj::SetScale(std::map<std::string, Md2Model> &md2models, float scale) {
+	for(auto &[key, value] : md2models) {
+		value.setScale(scale);
+	}
 }
 
 Md2Model::~Md2Model() {
@@ -72,7 +77,7 @@ Md2Model::~Md2Model() {
     std::unordered_map<int, std::pair<int, int>>().swap(mFrameIndices);
 }
 
-bool Md2Model::LoadModel() {
+bool Md2Model::loadModel() {
     /* MD2ヘッダ */
     md2header *header = (md2header*)mWkMd2BinData.data();
 
@@ -141,7 +146,7 @@ bool Md2Model::LoadModel() {
 }
 
 /* AssetsからTextureデータを読込む */
-bool Md2Model::LoadTexture() {
+bool Md2Model::loadTexture() {
     auto [retbool, w, h, rgbabindata] = TexObj::LoadTexture(mWkTexBinData);
     if(retbool) {
         mWkWidth = w;
@@ -152,7 +157,7 @@ bool Md2Model::LoadTexture() {
 }
 
 /* TextureデータをOpenGLで使えるようにする */
-bool Md2Model::InitTexture() {
+bool Md2Model::initTexture() {
     /* OpenGLのTexture初期化 */
     auto[boolret, texid] = GlObj::InitTexture(mWkWidth, mWkHeight, mWkRgbaData.data());
     if(boolret)
@@ -167,7 +172,7 @@ bool Md2Model::InitTexture() {
 }
 
 /* シェーダをOpenGLで使えるようにする */
-bool Md2Model::InitShaders() {
+bool Md2Model::initShaders() {
     /* シェーダ読込み */
     auto[retboot, progid] = GlObj::LoadShaders(mWkVshStrData, mWkFshStrData);
     if( !retboot) {
@@ -193,23 +198,7 @@ bool Md2Model::InitShaders() {
     return true;
 }
 
-bool Md2Model::DrawModel(const std::array<float, 16> &mvpmat, const std::array<float, 16> &normalmat, float scale, float rotatex, float rotatey, float elapsedtimeMs) {
-    static const int START_FRAME= 0;
-    static const int END_FRAME  = (int)mFrameIndices.size() - 1;
-
-    /* 補完係数の計算 */
-    static std::map<std::string, float> interpolates = {{"female", -0.1f}, {"grunt", -0.1f}};   /* 本来は経過時間と絡めて算出すべきだけど、今回はズルした。単純インクリメントで、対応 */
-    float interpolate = interpolates.at(mName);
-    if(interpolate >= 1.0f) {
-        interpolate = 0.0f;
-        if(mCurrentFrame >= END_FRAME)
-            mCurrentFrame = START_FRAME;
-        else
-            mCurrentFrame++;
-    }
-    interpolate += 0.1f;
-    interpolates.at(mName) = interpolate;
-
+bool Md2Model::drawModel(const std::array<float, 16> &normalmat, float elapsedtimeMs) {
     /* glActiveTexture() → glBindTexture() */
     GlObj::activeTexture(GL_TEXTURE0);
     GlObj::bindTexture(GL_TEXTURE_2D, mTexId);
@@ -218,8 +207,8 @@ bool Md2Model::DrawModel(const std::array<float, 16> &mvpmat, const std::array<f
     GlObj::useProgram(mProgramId);
 
     /* glUniformXxxxx() */
-    GlObj::setUniform(mProgramId, "mvpmat", mvpmat);
-    GlObj::setUniform(mProgramId, "interpolate", interpolate);
+    GlObj::setUniform(mProgramId, "mvpmat", mMvpMat);
+    GlObj::setUniform(mProgramId, "interpolate", minterpolate);
 
     /* glBindBuffer(有効化) */
     GlObj::bindBuffer(GL_ARRAY_BUFFER, mVboId);
@@ -231,11 +220,68 @@ bool Md2Model::DrawModel(const std::array<float, 16> &mvpmat, const std::array<f
 
     /* glDrawArrays() */
     int sidx = mFrameIndices[mCurrentFrame].first;
-    int size = mFrameIndices[mCurrentFrame].second - mFrameIndices[mCurrentFrame].first - 1;
+    int size = mFrameIndices[mCurrentFrame].second - mFrameIndices[mCurrentFrame].first + 1;
     GlObj::drawArrays(GL_TRIANGLES, sidx, size);
 
     /* glBindBuffer(無効化) */
     GlObj::bindBuffer(GL_ARRAY_BUFFER, NULL);
 
+    /* 補完係数の計算 */
+    if(minterpolate >= 1.0f) {
+        minterpolate = 0.0f;
+        if(mCurrentFrame >= (mFrameIndices.size()-1))
+            mCurrentFrame = 0;
+        else
+            mCurrentFrame++;
+    }
+    minterpolate += 0.1f;
+
     return true;
+}
+
+void Md2Model::setPosition(float x, float y, float z) {
+	mPosition = {x, y, z};
+
+    /* モデル行列更新 */
+    std::array<float, 16> rotetematx  = Mat44::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
+    std::array<float, 16> rotetematy  = Mat44::getRotatef( mRotatey, 0.0f, 1.0f, 0.0f);
+    std::array<float, 16> rotetemat   = Mat44::multMatrixf(rotetematx, rotetematy);
+    std::array<float, 16> translatemat= Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
+    mModelMat = Mat44::scalef(translatemat, {mScale, mScale, mScale});
+    /* モデル/ビュー/投影行列更新 */
+    mMvpMat = Mat44::multMatrixf(mExpiringVpMat, mModelMat);
+}
+
+void Md2Model::setRotate(float x, float y) {
+	mRotatex += x;
+	mRotatey -= y;
+
+	/* モデル行列更新 */
+    std::array<float, 16> rotetematx  = Mat44::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
+    std::array<float, 16> rotetematy  = Mat44::getRotatef( mRotatey, 0.0f, 1.0f, 0.0f);
+    std::array<float, 16> rotetemat   = Mat44::multMatrixf(rotetematx, rotetematy);
+    std::array<float, 16> translatemat= Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
+    mModelMat = Mat44::scalef(translatemat, {mScale, mScale, mScale});
+    /* モデル/ビュー/投影行列更新 */
+    mMvpMat = Mat44::multMatrixf(mExpiringVpMat, mModelMat);
+}
+
+void Md2Model::setScale(float scale) {
+	mScale = scale;
+
+    /* モデル行列更新 */
+    std::array<float, 16> rotetematx  = Mat44::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
+    std::array<float, 16> rotetematy  = Mat44::getRotatef( mRotatey, 0.0f, 1.0f, 0.0f);
+    std::array<float, 16> rotetemat   = Mat44::multMatrixf(rotetematx, rotetematy);
+    std::array<float, 16> translatemat= Mat44::translatef(rotetemat, {0.0f, -150.0f, 0.0f});
+    mModelMat = Mat44::scalef(translatemat, {mScale, mScale, mScale});
+    /* モデル/ビュー/投影行列更新 */
+    mMvpMat = Mat44::multMatrixf(mExpiringVpMat, mModelMat);
+}
+
+void Md2Model::setVpMat(const std::array<float, 16> &vpmat) {
+	/* ビュー投影行列更新 */
+	mExpiringVpMat = vpmat;
+	/* モデルビュー投影行列更新 */
+	mMvpMat = Mat44::multMatrixf(vpmat, mModelMat);
 }
