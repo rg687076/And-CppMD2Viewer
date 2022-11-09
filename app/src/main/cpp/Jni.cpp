@@ -7,7 +7,8 @@
 #include <jni.h>
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
-#include "Md2Obj.h"
+#include "Md2Model.h"
+#include "CgViewer.h"
 #include "GlObj.h"
 #include "GlobalSpaceObj.h"
 
@@ -104,7 +105,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     }
 
     /* 初期化 */
-    bool ret = Md2Obj::LoadModel(gMd2Models);
+    bool ret = CgViewer::LoadModel(gMd2Models);
     if(!ret) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::loadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
@@ -123,7 +124,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *en
     GlObj::GlInit();
 
     /* GL系モデル初期化(GL系は、このタイミングでないとエラーになる) */
-    bool ret = Md2Obj::InitModel(gMd2Models);
+    bool ret = CgViewer::InitModel(gMd2Models);
     if(!ret)
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
@@ -175,7 +176,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jc
     gPreStartTime = stime;
 
     /* Md2モデル描画 */
-    bool ret = Md2Obj::DrawModel(gMd2Models, gGlobalSpacePrm.mNormalMatrix, elapsedtimeMs);
+    bool ret = CgViewer::DrawModel(gMd2Models, gGlobalSpacePrm.mNormalMatrix, elapsedtimeMs);
     if(!ret) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::drawModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return;
@@ -239,13 +240,13 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setModelPosition(JNIEnv *en
 
 /* モデルデータ拡縮設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
-    Md2Obj::SetScale(gMd2Models, scale);
+    CgViewer::SetScale(gMd2Models, scale);
     return;
 }
 
 /* モデルデータ回転設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setRotate(JNIEnv *env, jclass clazz, jfloat rotatex, jfloat rotatey) {
-    Md2Obj::SetRotate(gMd2Models, rotatex, rotatey);
+    CgViewer::SetRotate(gMd2Models, rotatex, rotatey);
     return;
 }
 

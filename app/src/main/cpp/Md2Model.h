@@ -8,7 +8,7 @@
 #include <array>
 #include <GLES2/gl2.h>
 #include "Md2Parts.h"
-#include "MatObj.h"
+#include "MatVec.h"
 
 #define MD2_IDENT   (('2'<<24) + ('P'<<16) + ('D'<<8) + 'I')    /* magic number "IDP2" or 844121161 */
 #define	MD2_VERSION 8                                           /* model version */
@@ -79,15 +79,6 @@ public:
     std::array<float, 16> mModelMat      = Mat44::IDENTITY;
     std::array<float, 16> mExpiringVpMat = Mat44::IDENTITY;  /* 死にかけのView投影行列(随時、最新化されるのを期待する) */
     std::array<float, 16> mMvpMat        = Mat44::IDENTITY;  /* ModelView投影行列 */
-};
-
-class Md2Obj {
-public:
-    static bool LoadModel(std::map<std::string, Md2Model> &md2models);
-    static bool InitModel(std::map<std::string, Md2Model> &md2models);
-    static bool DrawModel(std::map<std::string, Md2Model> &md2models, const std::array<float, 16> &amNormalMat, float elapsedtimeMs);
-    static void SetScale(std::map<std::string, Md2Model> &md2models, float scale);
-    static void SetRotate(std::map<std::string, Md2Model> &md2models, float x, float y);
 };
 
 #endif //CPPMD2VIEWER_MD2OBJ_H

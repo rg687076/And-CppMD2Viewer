@@ -1,7 +1,7 @@
 #include <functional>
 #include <array>
 #include <cmath>
-#include "MatObj.h"
+#include "MatVec.h"
 
 const std::array<float, 16> Mat44::IDENTITY = {
         1.0, 0.0, 0.0, 0.0,

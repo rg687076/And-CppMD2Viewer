@@ -2,7 +2,7 @@
 #define CPPMD2VIEWER_GLOBALSPACEOBJ_H
 
 #include <array>
-#include "MatObj.h"
+#include "MatVec.h"
 
 class GlobalSpaceObj {
 public:
