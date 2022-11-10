@@ -19,7 +19,7 @@ bool CG3DViewer::init() {
 
     bool ret = GLES2::OpenGLInit();
     if(!ret) return false;
-    bool ret4 = GLES2::ShaderInit(AssetDatas.at("Shaders/mqocol.vsh"), AssetDatas.at("Shaders/mqocol.fsh"), AssetDatas.at("Shaders/mqotex.vsh"), AssetDatas.at("Shaders/mqotex.fsh"), RenderData.mGlShaderObjs, RenderData.mTexId);
+    bool ret4 = GLES2::ShaderInit(AssetDatas.at("shaders_/mqocol.vsh"), AssetDatas.at("shaders_/mqocol.fsh"), AssetDatas.at("shaders_/mqotex.vsh"), AssetDatas.at("shaders_/mqotex.fsh"), RenderData.mGlShaderObjs, RenderData.mTexId);
     if(!ret4) return false;
     bool ret5 = GLES2::BufferInit(RenderData.mGlBufferObj);
     if(!ret5) return false;
