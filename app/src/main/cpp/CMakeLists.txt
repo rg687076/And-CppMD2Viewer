@@ -11,6 +11,7 @@ add_library(mqo STATIC format/MatVec.cpp format/MQO.cpp )
 find_library(log-lib log)
 
 target_link_libraries(jni ${log-lib} android cg3dviewer cg3dcom mqo md2viewer)
+target_link_libraries(md2viewer ${log-lib})
 target_link_libraries(cg3dcom ${log-lib})
 target_link_libraries(mqo cg3dcom )
 target_link_libraries(cg3dviewer cg3dcom mqo ${log-lib} EGL GLESv2 android)
