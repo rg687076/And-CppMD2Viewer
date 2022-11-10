@@ -6,7 +6,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.tks.cppmd2viewer"
+        applicationId "com.tks.cppcgviewer"
         minSdk 29
         targetSdk 32
         versionCode 1

@@ -1,14 +1,22 @@
 cmake_minimum_required(VERSION 3.18.1)
 
-project("cppmd2viewer")
+project("cg3dviewer")
 
-add_library(jni SHARED Jni.cpp)
-add_library(md2model SHARED CgViewer.cpp Md2Model.cpp TexObj.cpp)
-add_library(globj SHARED GlObj.cpp)
-add_library(matobj SHARED MatVec.cpp)
+add_library( cg3dcom SHARED	CG3DCom.cpp
+                            format/CG3D.cpp)
+add_library( cg3dviewer SHARED	CG3DViewer.cpp
+                                Jni.cpp
+                                OpenGL/GLES2.cpp
+                                )
+add_library( mqo STATIC format/MatVec.cpp
+                        format/MQO.cpp
+                        )
 
-find_library(log-lib log)
+find_library( log-lib log )
+find_library( EGL_LIBRARY EGL )
+find_library( GLES_LIBRARY GLESv2 )
+find_library( ANDROID_LIBRARY android )
 
-target_link_libraries(jni ${log-lib} android md2model globj matobj)
-target_link_libraries(md2model ${log-lib} globj matobj)
-target_link_libraries(globj ${log-lib} EGL GLESv2)
+target_link_libraries( cg3dcom ${log-lib})
+target_link_libraries( mqo cg3dcom )
+target_link_libraries( cg3dviewer cg3dcom mqo ${log-lib} ${EGL_LIBRARY} ${GLES_LIBRARY} android)
