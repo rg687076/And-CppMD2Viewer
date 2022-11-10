@@ -1,7 +1,10 @@
 #ifndef CPPMD2VIEWER_MD2MODEL_H
 #define CPPMD2VIEWER_MD2MODEL_H
 
-class TmpMdlData {
+#include <string>
+#include <vector>
+
+class TmpBinData {
 public:
     std::string         mName = {};
     std::vector<char>   mWkMd2BinData = {};

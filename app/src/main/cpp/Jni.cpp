@@ -10,7 +10,7 @@
 #include <android/asset_manager_jni.h>
 #include "AppData.h"
 #include "CG3DViewer.h"
-#endif
+#endif  // __ANDROID__
 
 #ifdef __cplusplus
 extern "C" {
@@ -96,6 +96,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     }
 
     /* モデル名,頂点ファイル名,Texファイル名,頂点ファイル中身,Texファイル中身,vshファイルの中身,fshのファイルの中身 取得 */
+    std::map<std::string, TmpBinData> tmpbindatas = {};
     for(int lpct = 0; lpct < size0; lpct++) {
         /* jobjectArray -> jstring */
         jstring modelnamejstr   = (jstring)env->GetObjectArrayElement(modelnames  , lpct);
@@ -135,8 +136,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         }
 
         /* Md2model追加 */
-        std::map<std::string, TmpMdlData> tmpmdldatas = {};
-        tmpmdldatas.emplace(modelnamechar, TmpMdlData{.mName=modelnamechar,
+        tmpbindatas.emplace(modelnamechar, TmpBinData{.mName=modelnamechar,
                                                       .mWkMd2BinData=std::move(wk[0].second),
                                                       .mWkTexBinData=std::move(wk[1].second),
                                                       /* shaderはデータを文字列に変換して格納 */
