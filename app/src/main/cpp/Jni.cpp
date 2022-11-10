@@ -3,6 +3,7 @@
 #include <map>
 #include <mutex>
 #include <jni.h>
+#include "CgViewer.h"
 #include "Md2Model.h"
 
 #ifdef __ANDROID__
@@ -16,7 +17,7 @@
 extern "C" {
 #endif
 
-std::mutex                            gMutex;           /* onStart()完了待ちmutex */
+static std::mutex                            gMutex;           /* onStart()完了待ちmutex */
 
 /**************/
 /* CG3DViewer */
@@ -159,7 +160,8 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     }
 
 //    /* 初期化 */
-//    bool ret = CgViewer::LoadModel(gMd2Models);
+//    bool ret = CgViewer::LoadModel(tmpbindatas);
+//    tmpbindatas.clear();
 //    if(!ret) {
 //        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::loadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 //        return false;
