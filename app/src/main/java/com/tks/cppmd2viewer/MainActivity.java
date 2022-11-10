@@ -140,8 +140,15 @@ public class MainActivity extends AppCompatActivity {
                 Arrays.stream(files).forEach(f -> {
                     if(f.equals("images")) return;
                     if(f.equals("webkit")) return;
+                    if(f.equals("female.md2")) return;
+                    if(f.equals("female.tga")) return;
+                    if(f.equals("grunt.md2")) return;
+                    if(f.equals("grunt.tga")) return;
+                    if(f.equals("model-index.json")) return;
                     List<String> filelist = atomfilelist.get();
                     List<String> tmpaddfiles = getFiles(MainActivity.this.getAssets(), f);
+                    tmpaddfiles.remove("shaders/basic.fsh");
+                    tmpaddfiles.remove("shaders/basic.vsh");
                     filelist.addAll(tmpaddfiles);
                     atomfilelist.set(filelist);
                 });
