@@ -4,19 +4,20 @@
 #include <mutex>
 #include <jni.h>
 #include "Md2Model.h"
+#include "CgViewer.h"
 
 #ifdef __ANDROID__
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
 #include "AppData.h"
 #include "CG3DViewer.h"
-#endif
+#endif  // __ANDROID__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-std::mutex                            gMutex;           /* onStart()完了待ちmutex */
+static std::mutex gMutex;           /* onStart()完了待ちmutex */
 
 /**************/
 /* CG3DViewer */
@@ -96,6 +97,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     }
 
     /* モデル名,頂点ファイル名,Texファイル名,頂点ファイル中身,Texファイル中身,vshファイルの中身,fshのファイルの中身 取得 */
+    std::map<std::string, TmpBinData> tmpbindatas = {};
     for(int lpct = 0; lpct < size0; lpct++) {
         /* jobjectArray -> jstring */
         jstring modelnamejstr   = (jstring)env->GetObjectArrayElement(modelnames  , lpct);
@@ -135,8 +137,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         }
 
         /* Md2model追加 */
-        std::map<std::string, TmpMdlData> tmpmdldatas = {};
-        tmpmdldatas.emplace(modelnamechar, TmpMdlData{.mName=modelnamechar,
+        tmpbindatas.emplace(modelnamechar, TmpBinData{.mName=modelnamechar,
                                                       .mWkMd2BinData=std::move(wk[0].second),
                                                       .mWkTexBinData=std::move(wk[1].second),
                                                       /* shaderはデータを文字列に変換して格納 */
@@ -158,12 +159,13 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         env->DeleteLocalRef(fshfilenamejstr);
     }
 
-//    /* 初期化 */
-//    bool ret = CgViewer::LoadModel(gMd2Models);
-//    if(!ret) {
-//        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::loadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-//        return false;
-//    }
+    /* 初期化 */
+    bool ret = CgViewer::LoadModel(tmpbindatas);
+    tmpbindatas.clear();
+    if(!ret) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::loadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        return false;
+    }
 
     gMutex.unlock();
     return true;
