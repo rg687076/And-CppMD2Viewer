@@ -1,4 +1,4 @@
-package com.tks.cppcgviewer.modelformat;
+package com.tks.cppmd2viewer.modelformat;
 
 public class MQO {
     static {

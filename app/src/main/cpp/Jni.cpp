@@ -18,7 +18,7 @@ static std::tuple<bool, std::map<std::string, std::vector<char>>> LoadAssets(JNI
 /**************/
 /* CG3DViewer */
 /**************/
-JNIEXPORT jboolean JNICALL Java_com_tks_cppcgviewer_MainActivity_init(JNIEnv *env, jclass clazz, jobject assetmanager, jobjectArray objectArray) {
+JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_MainActivity_init(JNIEnv *env, jclass clazz, jobject assetmanager, jobjectArray objectArray) {
     std::vector<std::string> assetfiles;
     jsize arraysize = env->GetArrayLength(objectArray);
     for(int lpct = 0; lpct < arraysize; lpct++) {
@@ -68,7 +68,7 @@ static std::tuple<bool, std::map<std::string, std::vector<char>>> LoadAssets(JNI
 /*******/
 /* MQO */
 /*******/
-JNIEXPORT jboolean JNICALL Java_com_tks_cppcgviewer_modelformat_MQO_init(JNIEnv *env, jclass clazz) {
+JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_modelformat_MQO_init(JNIEnv *env, jclass clazz) {
     std::map<std::string, std::vector<char>> &AssetDatas = AppData::GetIns().mAssets;
     GlRenderData &RenderData = GlRenderData::GetIns();
 
@@ -83,22 +83,22 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppcgviewer_modelformat_MQO_init(JNIEnv 
     return true;
 }
 
-JNIEXPORT void JNICALL Java_com_tks_cppcgviewer_modelformat_MQO_setDrawArea(JNIEnv *env, jclass clazz, jint width, jint height) {
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_modelformat_MQO_setDrawArea(JNIEnv *env, jclass clazz, jint width, jint height) {
 	CG3DViewer::setDrawArea(width, height);
 	return;
 }
 
-JNIEXPORT void JNICALL Java_com_tks_cppcgviewer_modelformat_MQO_draw(JNIEnv *env, jclass clazz) {
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_modelformat_MQO_draw(JNIEnv *env, jclass clazz) {
 	CG3DViewer::draw();
 	return;
 }
 
-JNIEXPORT void JNICALL Java_com_tks_cppcgviewer_modelformat_MQO_setTouchAngle(JNIEnv *env, jclass clazz, jfloat aTouchAngleX, jfloat aTouchAngleY) {
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_modelformat_MQO_setTouchAngle(JNIEnv *env, jclass clazz, jfloat aTouchAngleX, jfloat aTouchAngleY) {
 	CG3DViewer::setTouchAngle(aTouchAngleX, aTouchAngleY);
 	return;
 }
 
-JNIEXPORT void JNICALL Java_com_tks_cppcgviewer_modelformat_MQO_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_modelformat_MQO_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
 	CG3DViewer::setScale(scale);
 	return;
 }

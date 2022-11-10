@@ -1,4 +1,4 @@
-package com.tks.cppcgviewer;
+package com.tks.cppmd2viewer;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,8 +11,8 @@ import android.view.ScaleGestureDetector;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import com.tks.cppcgviewer.databinding.Cg3dviewerBinding;
-import com.tks.cppcgviewer.modelformat.MQO;
+import com.tks.cppmd2viewer.databinding.Cg3dviewerBinding;
+import com.tks.cppmd2viewer.modelformat.MQO;
 
 import java.io.IOException;
 import java.util.ArrayList;

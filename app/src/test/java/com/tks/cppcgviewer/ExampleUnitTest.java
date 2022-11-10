@@ -1,4 +1,4 @@
-package com.tks.cppcgviewer;
+package com.tks.cppmd2viewer;
 
 import org.junit.Test;
 
