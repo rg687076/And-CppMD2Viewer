@@ -7,7 +7,7 @@ add_library(md2viewer SHARED Md2Model.cpp CgViewer.cpp)
 
 
 add_library(cg3dcom SHARED	CG3DCom.cpp format/CG3D.cpp)
-add_library(cg3dviewer SHARED CG3DViewer.cpp Jni.cpp OpenGL/GLES2.cpp Mqo.cpp)
+add_library(cg3dviewer SHARED CG3DViewer.cpp OpenGL/GLES2.cpp Jni.cpp)
 add_library(mqo STATIC format/MatVec.cpp format/MQO.cpp )
 
 find_library(log-lib log)
