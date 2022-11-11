@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.tks.cppmqoviewer", appContext.getPackageName());
+        assertEquals("com.tks.cppmd2viewer", appContext.getPackageName());
     }
 }
