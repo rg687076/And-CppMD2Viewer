@@ -174,27 +174,41 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
 
 /* onSurfaceCreated */
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *env, jclass clazz) {
-    // TODO: implement onSurfaceCreated()
+    std::map<std::string, std::vector<char>> &AssetDatas = AppData::GetIns().mAssets;
+    GlRenderData &RenderData = GlRenderData::GetIns();
+
+    auto [ret0, MqoInfo] = MQO::init(AssetDatas.at("vignette_ppp.mqo"));
+    if(!ret0) return false;
+    bool ret3 = MQO::remakeDrawInfo(MqoInfo, RenderData.mDrawInfos);
+    if(!ret3) return false;
+    bool ret6 = MQO::TextureInit(AssetDatas, MqoInfo.mMqoMaterials, RenderData.mDrawInfos);
+    if(!ret6) return false;
+
+    AppData::GetIns().mAssets.clear();
     return true;
 }
 
 /* onSurfaceChanged */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
-    // TODO: implement onSurfaceChanged()
+	CG3DViewer::setDrawArea(width, height);
+	return;
 }
 
 /* onDrawFrame */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jclass clazz) {
-    // TODO: implement onDrawFrame()
+	CG3DViewer::draw();
+	return;
 }
 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setTouchAngle(JNIEnv *env, jclass clazz, jfloat aTouchAngleX, jfloat aTouchAngleY) {
-    // TODO: implement setTouchAngle()
+	CG3DViewer::setTouchAngle(aTouchAngleX, aTouchAngleY);
+	return;
 }
 
 /* モデルデータ拡縮設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
-    // TODO: implement setScale()
+	CG3DViewer::setScale(scale);
+	return;
 }
 
 #ifdef __cplusplus
