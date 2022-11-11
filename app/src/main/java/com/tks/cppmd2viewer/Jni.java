@@ -13,4 +13,7 @@ public class Jni {
     public static native void onDrawFrame();
     public static native void setTouchAngle(float aTouchAngleX, float aTouchAngleY);
     public static native void setScale(float mScale);
+
+    /* MQO */
+    public static native boolean init(AssetManager mAssetManager, String[] object);
 }

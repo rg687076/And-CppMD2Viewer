@@ -18,6 +18,12 @@ static std::mutex                            gMutex;           /* onStart()å®Œäº
 /*******/
 /* Jni */
 /*******/
+/* MQO */
+JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_init(JNIEnv *env, jclass clazz, jobject m_asset_manager, jobjectArray object) {
+    // TODO: implement init()
+	return true;
+}
+
 /* onStart */
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
                                       jobjectArray modelnames,

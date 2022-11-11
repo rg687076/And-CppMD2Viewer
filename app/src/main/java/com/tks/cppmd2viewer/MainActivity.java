@@ -22,8 +22,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -50,6 +53,34 @@ public class MainActivity extends AppCompatActivity {
         glview.setRenderer(new GLSurfaceView.Renderer() {
             @Override
             public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
+                /* ***************** TODO 削除予定 ここから */
+                /* Asset配下のファイル一覧を取得 */
+                AtomicReference<List<String>> atomfilelist = new AtomicReference<List<String>>();
+                atomfilelist.set(new ArrayList<String>());
+                try {
+                    String[] files = MainActivity.this.getAssets().list("");
+                    Arrays.stream(files).forEach(f -> {
+                        if(f.equals("images")) return;
+                        if(f.equals("webkit")) return;
+                        if(f.equals("female.md2")) return;
+                        if(f.equals("female.tga")) return;
+                        if(f.equals("grunt.md2")) return;
+                        if(f.equals("grunt.tga")) return;
+                        if(f.equals("model-index.json")) return;
+                        List<String> filelist = atomfilelist.get();
+                        List<String> tmpaddfiles = getFiles(MainActivity.this.getAssets(), f);
+                        tmpaddfiles.remove("shaders/basic.fsh");
+                        tmpaddfiles.remove("shaders/basic.vsh");
+                        filelist.addAll(tmpaddfiles);
+                        atomfilelist.set(filelist);
+                    });
+
+                }
+                catch (IOException e) { }
+
+                boolean ret = Jni.init(MainActivity.this.getAssets(), atomfilelist.get().toArray(new String[atomfilelist.get().size()]));
+                if(!ret) throw new RuntimeException("CG3DViewer.init()で失敗");
+                /* ***************** 削除予定 ここまで */
                 boolean ret1 = Jni.onSurfaceCreated();
                 if(!ret1) throw new RuntimeException("Jni.init()で失敗");
             }
@@ -116,6 +147,24 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onTouchEvent(event);
+    }
+
+    private static List<String> getFiles( android.content.res.AssetManager am, String file) {
+        List<String> retList = new ArrayList<String>();
+        try {
+            String[] subfiles = am.list(file);
+            if(subfiles.length != 0) {
+                Arrays.stream(subfiles).forEach(f -> {
+                    retList.addAll(getFiles(am, file+"/"+f));
+                });
+            }
+            else {
+                retList.add(file);
+                return retList;
+            }
+        }
+        catch (IOException e) { return new ArrayList<String>();}
+        return retList;
     }
 
     @Override
