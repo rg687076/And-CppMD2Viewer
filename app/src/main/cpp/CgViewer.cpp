@@ -5,12 +5,12 @@
 #include "Md2Model.h"
 #include "CgViewer.h"
 
-//static std::map<std::string, Md2Model> gMd2Models;       /* Md2モデルデータ実体 */
+static std::map<std::string, Md2Model> gMd2Models;       /* Md2モデルデータ実体 */
 
 /* Md2モデル読込み(model読込,tex読込) */
 bool CgViewer::LoadModel(std::map<std::string, TmpBinData> &tmpbindatas) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-//    gMd2Models.clear();
+    gMd2Models.clear();
 
     for(auto &[key, bindata] : tmpbindatas) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model load start (%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);

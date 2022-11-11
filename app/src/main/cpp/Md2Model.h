@@ -18,11 +18,11 @@ public:
     std::vector<char>   mWkRgbaData = {};
 };
 
-//class Md2Model {
-//public:
-//    ~Md2Model();
-//    bool loadModel(std::vector<char> &md2bindata);   /* binデータからMd2データを読込む */
-//};
+class Md2Model {
+public:
+    ~Md2Model();
+    bool loadModel(std::vector<char> &md2bindata);   /* binデータからMd2データを読込む */
+};
 
 /* md2 header */
 struct md2header {
