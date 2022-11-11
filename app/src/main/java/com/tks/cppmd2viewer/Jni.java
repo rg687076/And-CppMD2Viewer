@@ -15,5 +15,5 @@ public class Jni {
     public static native void setScale(float mScale);
 
     /* MQO */
-    public static native boolean init(AssetManager mAssetManager, String[] object);
+    public static native boolean init(AssetManager assets, String[] toArray);
 }
