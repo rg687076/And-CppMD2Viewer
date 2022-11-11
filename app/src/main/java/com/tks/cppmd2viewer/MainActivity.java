@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'cppmd2viewer' library on application startup.
     static {
-        System.loadLibrary("cppmd2viewer");
+        System.loadLibrary("jni");
     }
 
     private ActivityMainBinding binding;
@@ -33,10 +33,6 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        // Example of a call to a native method
-        TextView tv = binding.sampleText;
-        tv.setText(stringFromJNI());
 
         GLSurfaceView glview = binding.glview;
         glview.setEGLContextClientVersion(2);
@@ -50,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSurfaceChanged(GL10 gl10, int i, int i1) {
-
+            public void onSurfaceChanged(GL10 gl10, int width, int height) {
+                mHeight = height;
             }
 
             @Override
@@ -71,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 mScale = detector.getScaleFactor();
                 if(mScale > 5) mScale = 5;
                 else if(mScale < 0.2) mScale = 0.2f;
-//                Jni.setScale(mScale);
+                Jni.setScale(mScale);
                 return super.onScale(detector);
             }
 
@@ -103,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 float dy = factor * (event.getY() - mLastY);
                 mTouchAngleX = Math.max(Math.min(mTouchAngleX+dy,90f),-90f);
                 mTouchAngleY += dx;
-//                Jni.setTouchAngle(mTouchAngleX, mTouchAngleY);
+                Jni.setTouchAngle(mTouchAngleX, mTouchAngleY);
                 mLastX = event.getX();
                 mLastY = event.getY();
             }
@@ -111,10 +107,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onTouchEvent(event);
     }
-
-    /**
-     * A native method that is implemented by the 'cppmd2viewer' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
 }
