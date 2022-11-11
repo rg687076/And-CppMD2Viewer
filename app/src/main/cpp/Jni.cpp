@@ -21,11 +21,13 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
                                       jobjectArray vshfilenames, jobjectArray fshfilenames) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
+    return true;
 }
 
 /* onSurfaceCreated */
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *env, jclass clazz) {
     // TODO: implement onSurfaceCreated()
+    return true;
 }
 
 /* onSurfaceChanged */
