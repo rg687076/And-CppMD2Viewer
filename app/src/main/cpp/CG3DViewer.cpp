@@ -14,9 +14,9 @@
 #endif
 
 bool CG3DViewer::init() {
-//    const std::map<std::string, std::vector<char>> &AssetDatas = AppData::GetIns().mAssets;
-//    GlRenderData &RenderData = GlRenderData::GetIns();
-//
+    const std::map<std::string, std::vector<char>> &AssetDatas = AppData::GetIns().mAssets;
+    GlRenderData &RenderData = GlRenderData::GetIns();
+
 //    bool ret = GLES2::OpenGLInit();
 //    if(!ret) return false;
 //    bool ret4 = GLES2::ShaderInit(AssetDatas.at("shaders/mqocol.vsh"), AssetDatas.at("shaders/mqocol.fsh"), AssetDatas.at("shaders/mqotex.vsh"), AssetDatas.at("shaders/mqotex.fsh"), RenderData.mGlShaderObjs, RenderData.mTexId);
