@@ -1,37 +1,52 @@
 #include <jni.h>
 #include <string>
 
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
-                                      jobjectArray modelnames, jobjectArray md2filenames,
-                                      jobjectArray texfilenames, jobjectArray vshfilenames,
-                                      jobjectArray fshfilenames) {
-    // TODO: implement onStart()
+#ifdef __ANDROID__
+#include <android/log.h>
+#include <android/asset_manager_jni.h>
+#endif  // __ANDROID__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/*******/
+/* Jni */
+/*******/
+/* onStart */
+JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
+                                      jobjectArray modelnames,
+                                      jobjectArray md2filenames, jobjectArray texfilenames,
+                                      jobjectArray vshfilenames, jobjectArray fshfilenames) {
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
 }
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *env, jclass clazz) {
+
+/* onSurfaceCreated */
+JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *env, jclass clazz) {
     // TODO: implement onSurfaceCreated()
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
+
+/* onSurfaceChanged */
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
     // TODO: implement onSurfaceChanged()
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jclass clazz) {
+
+/* onDrawFrame */
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jclass clazz) {
     // TODO: implement onDrawFrame()
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_tks_cppmd2viewer_Jni_setTouchAngle(JNIEnv *env, jclass clazz, jfloat a_touch_angle_x,
-                                            jfloat a_touch_angle_y) {
+
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setTouchAngle(JNIEnv *env, jclass clazz, jfloat aTouchAngleX, jfloat aTouchAngleY) {
     // TODO: implement setTouchAngle()
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat m_scale) {
+
+/* モデルデータ拡縮設定 */
+JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
     // TODO: implement setScale()
 }
+
+#ifdef __cplusplus
+};
+#endif

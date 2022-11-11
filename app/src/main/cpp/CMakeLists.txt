@@ -6,4 +6,4 @@ add_library(jni SHARED Jni.cpp)
 
 find_library(log-lib log)
 
-target_link_libraries(jni ${log-lib})
+target_link_libraries(jni ${log-lib} android)
