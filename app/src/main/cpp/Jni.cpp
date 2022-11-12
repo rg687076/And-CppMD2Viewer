@@ -18,8 +18,8 @@
 extern "C" {
 #endif
 
-static std::mutex                     gMutex;           /* onStart()完了待ちmutex */
-std::map<std::string, TmpBinData3>    gTmpBinData3s;    /* Gl初期化用のTexデータ */
+static std::mutex                           gMutex;           /* onStart()完了待ちmutex */
+static std::map<std::string, TmpBinData3>   gTmpBinData3s;    /* Gl初期化用のTexデータ */
 
 /**************/
 /* CG3DViewer */
