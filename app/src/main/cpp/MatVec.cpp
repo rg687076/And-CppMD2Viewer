@@ -1303,7 +1303,7 @@ std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, flo
 #undef M
 
 	retmat = MatVec::multMatrixf(retmat, m);
-	retmat = MatVec::Translatef(retmat, -eyex, -eyey, -eyez);
+	retmat = MatVec::translatef(retmat, -eyex, -eyey, -eyez);
 
 	return retmat;
 }
@@ -1311,7 +1311,7 @@ std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, flo
 /******************/
 /* 移動行列を設定 */
 /******************/
- std::array<float, 16> MatVec::Translatef(const std::array<float, 16> &mat, float x, float y, float z) {
+ std::array<float, 16> MatVec::translatef(const std::array<float, 16> &mat, float x, float y, float z) {
 	 std::array<float, 16> retmat = mat;
 	 retmat[12] = mat[0] * x + mat[4] * y + mat[ 8] * z + mat[12];
 	 retmat[13] = mat[1] * x + mat[5] * y + mat[ 9] * z + mat[13];
@@ -1328,9 +1328,9 @@ std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, flo
 /* @param y Y axis component */
 /* @param z Z axis component */
 /******************/
-void MatVec::Rotatef(std::array<float, 16> &retmat, float angle, float x, float y, float z) {
+std::array<float, 16> MatVec::rotatef(const std::array<float, 16> &mat, float angle, float x, float y, float z) {
 	std::array<float, 16> rotm = MatVec::getRotatef(angle, x, y, z);
-	retmat = MatVec::multMatrixf(retmat, rotm);
+	return MatVec::multMatrixf(mat, rotm);
 }
 
 /******************/

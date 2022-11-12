@@ -303,8 +303,8 @@ void GLES2::calcCordinate(GlShaderObj &aShaderObj, std::array<float, 16> &aModel
     GlRenderData &RenderData = GlRenderData::GetIns();
 
     aModelMatrix = MatVec::getRotatef(-RenderData.mTouchAngleX, 1.0f, 0.0f, 0.0f);
-    MatVec::Rotatef(aModelMatrix, RenderData.mTouchAngleY, 0.0f, 1.0f, 0.0f);
-    aModelMatrix = MatVec::Translatef(aModelMatrix, 0.0f, -150.0f, 0.0f);
+    aModelMatrix = MatVec::rotatef(aModelMatrix, RenderData.mTouchAngleY, 0.0f, 1.0f, 0.0f);
+    aModelMatrix = MatVec::translatef(aModelMatrix, 0.0f, -150.0f, 0.0f);
     MatVec::Scalef(aModelMatrix, RenderData.mScale, RenderData.mScale, RenderData.mScale);
 
     // 法線の変換行列を計算し、u_NormalMatrixに設定する
