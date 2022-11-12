@@ -1398,27 +1398,31 @@ std::array<float, 16> MatVec::scalef(const std::array<float, 16> &mat, float x, 
 	return retmat;
 }
 
-bool MatVec::invertf(std::array<float, 16> &retmat, const std::array<float, 16> &matrix) {
+/* 逆行列 算出 */
+std::tuple<bool, std::array<float, 16>> MatVec::invertf(const std::array<float, 16> &mat) {
+	std::array<float, 16> retmat = {};
+	bool retboot = true;
+
 	/* 転置行列 */
-	float src0  = matrix[ 0];
-	float src4  = matrix[ 1];
-	float src8  = matrix[ 2];
-	float src12 = matrix[ 3];
+	float src0  = mat[ 0];
+	float src4  = mat[ 1];
+	float src8  = mat[ 2];
+	float src12 = mat[ 3];
 
-	float src1  = matrix[ 4];
-	float src5  = matrix[ 5];
-	float src9  = matrix[ 6];
-	float src13 = matrix[ 7];
+	float src1  = mat[ 4];
+	float src5  = mat[ 5];
+	float src9  = mat[ 6];
+	float src13 = mat[ 7];
 
-	float src2  = matrix[ 8];
-	float src6  = matrix[ 9];
-	float src10 = matrix[10];
-	float src14 = matrix[11];
+	float src2  = mat[ 8];
+	float src6  = mat[ 9];
+	float src10 = mat[10];
+	float src14 = mat[11];
 
-	float src3  = matrix[12];
-	float src7  = matrix[13];
-	float src11 = matrix[14];
-	float src15 = matrix[15];
+	float src3  = mat[12];
+	float src7  = mat[13];
+	float src11 = mat[14];
+	float src15 = mat[15];
 
 	/* calculate pairs for first 8 elements (cofactors) */
 	float atmp0  = src10 * src15;
@@ -1487,7 +1491,9 @@ bool MatVec::invertf(std::array<float, 16> &retmat, const std::array<float, 16> 
 	/* calculate determinant */
 	float det = src0 * dst0 + src1 * dst1 + src2 * dst2 + src3 * dst3;
 
-	if (det == 0.0f) return false;
+	/* 逆行列判定 */
+	retboot = false;
+	if(std::abs(det) <= FLT_EPSILON) return {retboot, retmat};
 
 	/* calculate matrix inverse */
 	float invdet = 1.0f / det;
@@ -1511,7 +1517,8 @@ bool MatVec::invertf(std::array<float, 16> &retmat, const std::array<float, 16> 
 	retmat[14] = dst14 * invdet;
 	retmat[15] = dst15 * invdet;
 
-	return true;
+	retboot = true;
+	return {retboot, retmat};
 }
 
 void MatVec::transposef(std::array<float, 16> &retmat, const std::array<float, 16> &matrix) {
