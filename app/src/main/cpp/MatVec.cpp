@@ -1195,8 +1195,7 @@ std::array<float, 16> MatVec::getPerspectivef(float fovy, float aspect, float ne
 	float yy = 1.0f / (bottom - top);
 	float zz = 1.0f / (near - far);
 
-	std::array<float, 16> m = {};
-#define M(row, col) m[col * 4 + row]
+#define M(row, col) retMat[col * 4 + row]
 
 	M(0, 0) = n2 * xx;
 	M(0, 1) = 0.0f;
@@ -1219,8 +1218,6 @@ std::array<float, 16> MatVec::getPerspectivef(float fovy, float aspect, float ne
 	M(3, 3) = 0.0f;
 
 #undef M
-
-	retMat = MatVec::multMatrixf(retMat, m);
 
 	return retMat;
 }
