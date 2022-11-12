@@ -452,6 +452,7 @@ class MatVec {
 public:
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &m);
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &a, const std::array<float, 16> &m);
+	static std::array<float, 16> multMatrixf2(const std::array<float, 16> &mat, const std::array<float, 16> &m);
 	static std::array<float, 3> normalize(const std::array<float, 3> &v);
 	static std::array<float, 3> cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2);
 	static std::array<float, 16> getPerspectivef(float fovy, float aspect, float zNear, float zFar);
