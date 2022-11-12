@@ -1131,10 +1131,6 @@ bool isSameAxle(const Axis &a1, const Axis &a2) {
 /**************/
 /* 行列初期化 */
 /**************/
-void MatVec::LoadIdentity(std::array<float, 16> &M) {
-	M = Matrix4f::IDENTITY;
-}
-
 Matrix4f MatVec::LoadIdentity() {
 	Matrix4f ret;
 	ret.mM = Matrix4f::IDENTITY;
@@ -1359,35 +1355,28 @@ void MatVec::Rotatef(std::array<float, 16> &retmat, float angle, float x, float 
 /******************/
 std::array<float, 16> MatVec::GetRotatef(float angle, float x, float y, float z) {
 	std::array<float, 16> rm = {};
-	rm[3] = 0;
-	rm[7] = 0;
-	rm[11]= 0;
-	rm[12]= 0;
-	rm[13]= 0;
-	rm[14]= 0;
-	rm[15]= 1;
 	angle *= (float) (PI / 180.0f);
 	float s = (float) std::sin(angle);
 	float c = (float) std::cos(angle);
 	if (1.0f == x && 0.0f == y && 0.0f == z) {
-		rm[5] = c;   rm[10]= c;
-		rm[6] = s;   rm[9] = -s;
-		rm[1] = 0;   rm[2] = 0;
-		rm[4] = 0;   rm[8] = 0;
-		rm[0] = 1;
-	} else if (0.0f == x && 1.0f == y && 0.0f == z) {
-		rm[0] = c;   rm[10]= c;
-		rm[8] = s;   rm[2] = -s;
-		rm[1] = 0;   rm[4] = 0;
-		rm[6] = 0;   rm[9] = 0;
-		rm[5] = 1;
-	} else if (0.0f == x && 0.0f == y && 1.0f == z) {
-		rm[0] = c;   rm[5] = c;
-		rm[1] = s;   rm[4] = -s;
-		rm[2] = 0;   rm[6] = 0;
-		rm[8] = 0;   rm[9] = 0;
-		rm[10]= 1;
-	} else {
+		rm[0] = 1; rm[1] = 0; rm[2] = 0; rm[3] = 0;
+		rm[4] = 0; rm[5] = c; rm[6] = s; rm[7] = 0;
+		rm[8] = 0; rm[9] =-s; rm[10]= c; rm[11]= 0;
+		rm[12]= 0; rm[13]= 0; rm[14]= 0; rm[15]= 1;
+	}
+	else if (0.0f == x && 1.0f == y && 0.0f == z) {
+		rm[0] = c; rm[1] = 0; rm[2] =-s; rm[3] = 0;
+		rm[4] = 0; rm[5] = 1; rm[6] = 0; rm[7] = 0;
+		rm[8] = s; rm[9] = 0; rm[10]= c; rm[11]= 0;
+		rm[12]= 0; rm[13]= 0; rm[14]= 0; rm[15]= 1;
+	}
+	else if (0.0f == x && 0.0f == y && 1.0f == z) {
+		rm[0] = c; rm[1] = s; rm[2] = 0; rm[3] = 0;
+		rm[4] =-s; rm[5] = c; rm[6] = 0; rm[7] = 0;
+		rm[8] = 0; rm[9] = 0; rm[10]= 1; rm[11]= 0;
+		rm[12]= 0; rm[13]= 0; rm[14]= 0; rm[15]= 1;
+	}
+	else {
 		float len = std::sqrt(x*x + y*y + z*z);
 		if (1.0f != len) {
 			float recipLen = 1.0f / len;
@@ -1402,15 +1391,10 @@ std::array<float, 16> MatVec::GetRotatef(float angle, float x, float y, float z)
 		float xs = x * s;
 		float ys = y * s;
 		float zs = z * s;
-		rm[ 0] = x*x*nc +  c;
-		rm[ 4] =  xy*nc - zs;
-		rm[ 8] =  zx*nc + ys;
-		rm[ 1] =  xy*nc + zs;
-		rm[ 5] = y*y*nc +  c;
-		rm[ 9] =  yz*nc - xs;
-		rm[ 2] =  zx*nc - ys;
-		rm[ 6] =  yz*nc + xs;
-		rm[10] = z*z*nc +  c;
+		rm[ 0] = x*x*nc +  c; rm[ 1] =  xy*nc + zs; rm[ 2] =  zx*nc - ys; rm[3] = 0;
+		rm[ 4] =  xy*nc - zs; rm[ 5] = y*y*nc +  c; rm[ 6] =  yz*nc + xs; rm[7] = 0;
+		rm[ 8] =  zx*nc + ys; rm[ 9] =  yz*nc - xs; rm[10] = z*z*nc +  c; rm[11]= 0;
+		rm[12] = 0;           rm[13] = 0;           rm[14]= 0;            rm[15]= 1;
 	}
 
 	return rm;

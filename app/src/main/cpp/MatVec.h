@@ -450,22 +450,22 @@ const float _axis_convert_matrix[23][3][3] = {
 
 class MatVec {
 public:
-	static void LoadIdentity(std::array<float, 16> &M);
-	static Matrix4f LoadIdentity();
 	static void LoadMatrix(std::array<float, 16> &retmat, const std::array<float, 16> &a);
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &m);
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &a, const std::array<float, 16> &m);
-	static Matrix4f MultMatrix(const Matrix4f &a, const Matrix4f &m);
 	static void normalize(std::array<float, 3> &v);
 	static void cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2, std::array<float, 3> &result);
 	static std::array<float, 16> GetPerspectivef(float fovy, float aspect, float zNear, float zFar);
 	static std::array<float, 16> GetLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz);
+	static std::array<float, 16> GetRotatef(float angle, float x, float y, float z);
 	static void Translatef(std::array<float, 16> &retmat, float x, float y, float z);
 	static void Rotatef(std::array<float, 16> &retmat, float angle, float x, float y, float z);
-	static std::array<float, 16> GetRotatef(float angle, float x, float y, float z);
 	static void Scalef(std::array<float, 16> &retmat, float x, float y, float z);
 	static bool invertf(std::array<float, 16> &retmat, const std::array<float, 16> &matrix);
 	static void transposef(std::array<float, 16> &retmat, const std::array<float, 16> &matrix);
+
+	static Matrix4f LoadIdentity();
+	static Matrix4f MultMatrix(const Matrix4f &a, const Matrix4f &m);
 	static Matrix4f createRotation(float xDeg, float yDeg, float zDeg);
 	static Matrix4f createTranslation(float x, float y, float z, float w=1);
 	static Matrix4f createScale(float sx, float sy, float sz);

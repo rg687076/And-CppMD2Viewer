@@ -290,7 +290,7 @@ void GLES2::draw() {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, drawinfo.mTexWidth, drawinfo.mTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, drawinfo.mTexBinData);
         }
 
-        MatVec::LoadIdentity(SystemData.mModelMatrix);
+        SystemData.mModelMatrix = Matrix4f::IDENTITY;
         GLES2::calcCordinate(shaderobj, SystemData.mModelMatrix, SystemData.mVpMatrix, SystemData.mMvpMatrix, SystemData.mNormalMatrix);
         // 描画
 //        __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa vertexサイズ=%d", (int)(drawinfo.mVirtexs.size()));
