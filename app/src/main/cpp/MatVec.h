@@ -459,6 +459,7 @@ public:
 	static std::array<float, 16> translatef(const std::array<float, 16> &mat, float x, float y, float z);
 	static std::array<float, 16> rotatef(const std::array<float, 16> &mat, float angle, float x, float y, float z);
 	static void Scalef(std::array<float, 16> &retmat, float x, float y, float z);
+	static std::array<float, 16> Scalef2(const std::array<float, 16> &mat, float x, float y, float z);
 	static bool invertf(std::array<float, 16> &retmat, const std::array<float, 16> &matrix);
 	static void transposef(std::array<float, 16> &retmat, const std::array<float, 16> &matrix);
 

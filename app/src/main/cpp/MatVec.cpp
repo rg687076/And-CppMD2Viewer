@@ -1396,6 +1396,16 @@ void MatVec::Scalef(std::array<float, 16> &retmat, float x, float y, float z) {
 	}
 }
 
+std::array<float, 16> MatVec::Scalef2(const std::array<float, 16> &mat, float x, float y, float z) {
+	std::array<float, 16> retmat = mat;
+	for (int i=0 ; i<4 ; i++) {
+		retmat[	    i] *= x;
+		retmat[ 4 + i] *= y;
+		retmat[ 8 + i] *= z;
+	}
+	return retmat;
+}
+
 bool MatVec::invertf(std::array<float, 16> &retmat, const std::array<float, 16> &matrix) {
 	/* 転置行列 */
 	float src0  = matrix[ 0];
