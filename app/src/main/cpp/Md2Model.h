@@ -5,23 +5,28 @@
 #include <vector>
 
 const int MD2_IDENT = (('2'<<24) + ('P'<<16) + ('D'<<8) + 'I'); /* magic number "IDP2" or 844121161 */
+const int MD2_VERSION = 8;                                        /* model version */
 
-class TmpBinData {
+class TmpBinData1 {
 public:
     std::string         mName = {};
     std::vector<char>   mWkMd2BinData = {};
     std::vector<char>   mWkTexBinData = {};
-    std::string         mWkVshStrData = {};
-    std::string         mWkFshStrData = {};
+};
+
+class TmpBinData2 {
+public:
+    std::string         mName = {};
     int                 mWkWidth = 0;
     int                 mWkHeight= 0;
     std::vector<char>   mWkRgbaData = {};
 };
 
-class Md2Model {
+class TmpBinData3 {
 public:
-    ~Md2Model();
-    bool loadModel(std::vector<char> &md2bindata);   /* binデータからMd2データを読込む */
+    std::string         mName = {};
+    std::string         mWkVshStrData = {};
+    std::string         mWkFshStrData = {};
 };
 
 /* md2 header */
@@ -78,6 +83,39 @@ struct frame {
     float translate[3];
     char name[16];  /* ← 何者か不明,けっこう文字化けする,どっちにしても未使用 */
     framePoint_t fp[1];
+};
+
+struct MdlData {
+    int numTotalFrames;
+    int numVertexsPerFrame;
+//    int numPolys;
+//    int twidth;
+//    int theight;
+//    int currentFrame;
+//    int nextFrame;
+//    float interpol;
+    std::vector<vertex>     vertexList;
+    std::vector<texstcoord> st;
+    std::vector<mesh>       polyIndex;
+//    float x, y, z;
+//    float nextX, nextY, nextZ;
+//    float radius;
+//    float dist_to_player;
+//    int state;
+//    float speed;
+};
+
+class Md2Model {
+public:
+    ~Md2Model();
+    bool loadModel(const std::string &key, const std::vector<char> &md2bindata);   /* binデータからMd2データを読込む */
+    bool loadTexture(const std::string &key, const std::vector<char> &texbindata); /* AssetsからTextureデータを読込む */
+
+public:
+    /* モデルデータ */
+    MdlData                 mMdlData = {0};
+    /* アニメ関連 */
+    int numTotalFrames = 0;
 };
 
 #endif //CPPMD2VIEWER_MD2MODEL_H
