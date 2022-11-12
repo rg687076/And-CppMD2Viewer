@@ -11,7 +11,7 @@
 namespace cg {
 	class Face {
 	public:
-		m::Vector4i vs;
+		Vector4i vs;
 		short mat_nr;
 		/** We keep edcode, for conversion to edges draw flags in old files. */
 		char edcode, flag;
@@ -19,7 +19,7 @@ namespace cg {
 
 	class Edge {
 	public:
-		m::Vector2i	Vertices;
+		Vector2i	Vertices;
 		bool 		UseEdgeSharp = false;
 		char		Crease = 0;
 		char		bweight = 0;
@@ -29,19 +29,19 @@ namespace cg {
 	class ColorLayer {
 	public:
 		std::string					Name;
-		std::vector<m::Vector3i>	ColorData;
+		std::vector<Vector3i>	ColorData;
 	};
 
 	class UvLayer {
 	public:
 		std::string					Name;
-		std::vector<m::Vector2f>	UvData;
+		std::vector<Vector2f>	UvData;
 	};
 
 	class Vertex {
 	public:
-		m::Vector3f	Co;
-		m::Vector3f	No;
+		Vector3f	Co;
+		Vector3f	No;
 		char		bweight;/* TODO 必要なのか？ */
 		char		flag;	/* TODO 必要なのか？ */
 	};
@@ -50,7 +50,7 @@ namespace cg {
 	public:
 		int			VertexIndex;
 		int			EdgeIndex;
-		m::Vector3f	Normal;
+		Vector3f	Normal;
 	};
 
 	class Polygon {

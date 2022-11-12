@@ -17,8 +17,8 @@ class MqoMaterial {
 public:
 	int MaterialID;						/* ID */
 	std::string MaterialName;			/* マテリアル名 */
-	m::Color4 Color;					/* カラー */
-	m::Reflection4 ReflectionColor;	/* 反射 */
+	Color4 Color;					/* カラー */
+	Reflection4 ReflectionColor;	/* 反射 */
 	float Power;						/* shiness */
 	std::string TexName;				/* テクスチャ名(模様マッピング) */
 	std::string AlpName;				/* 透明マッピング */
@@ -44,11 +44,11 @@ public:
 	std::string Name;								/* オブジェクト名 */
 	int		 visible;								/* 可視/不可視 */
 	int		 shading;								/* 法線適用種別 */
-	m::Vector4f  color;						/* カラー */
-	std::vector<m::Vector3f>	Vertex;			/* 頂点データ */
-	std::vector<m::Vector3f>	Normal;			/* 法線データ */
-	std::vector<m::Triangle>		TriangleData;	/* 3角面データ */
-	std::vector<m::Quad>			QuadData;		/* 4角面データ */
+	Vector4f  color;						/* カラー */
+	std::vector<Vector3f>	Vertex;			/* 頂点データ */
+	std::vector<Vector3f>	Normal;			/* 法線データ */
+	std::vector<Triangle>		TriangleData;	/* 3角面データ */
+	std::vector<Quad>			QuadData;		/* 4角面データ */
 public:
 	MqoObject():Name(),visible(0),shading(0),color(),Vertex(),Normal(),TriangleData(),QuadData(){};
 	MqoObject &operator=(const MqoObject &rhs);
@@ -81,13 +81,13 @@ private:
 	static bool Load(const std::vector<char> &MqoModelData, MqoInfo &aMqoInfo);
 	static void LoadMaterial(std::vector<std::string> &contents, unsigned int &lpct, std::vector<MqoMaterial> &aMaterial);
 	static void LoadObject(std::vector<std::string> &contents, unsigned int &lpct, std::vector<MqoObject> &aObjects);
-	static void LoadVertex(std::vector<std::string> &contents, unsigned int &lpct, std::vector<m::Vector3f> &aVertexs);
-	static void LoadFace(std::vector<std::string> &contents, unsigned int &lpct, std::vector<m::Triangle> &aTriangles, std::vector<m::Quad> &aQuadRilaterals);
+	static void LoadVertex(std::vector<std::string> &contents, unsigned int &lpct, std::vector<Vector3f> &aVertexs);
+	static void LoadFace(std::vector<std::string> &contents, unsigned int &lpct, std::vector<Triangle> &aTriangles, std::vector<Quad> &aQuadRilaterals);
 	static void setNormal(MqoObject &mqoobject);
-	static m::Vector3f calcNormal(m::Vector3f &aV0, m::Vector3f &aV1, m::Vector3f &aV2);
-	static float *vector2array(std::vector<m::Vector3f> &vector);
-	static float *vector2array(std::vector<m::UV> &vector);
-	static float *vector2array(std::vector<m::Color4> &vector);
+	static Vector3f calcNormal(Vector3f &aV0, Vector3f &aV1, Vector3f &aV2);
+	static float *vector2array(std::vector<Vector3f> &vector);
+	static float *vector2array(std::vector<UV> &vector);
+	static float *vector2array(std::vector<Color4> &vector);
 };
 
 

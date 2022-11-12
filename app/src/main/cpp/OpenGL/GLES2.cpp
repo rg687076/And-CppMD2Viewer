@@ -290,7 +290,7 @@ void GLES2::draw() {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, drawinfo.mTexWidth, drawinfo.mTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, drawinfo.mTexBinData);
         }
 
-        m::MatVec::LoadIdentity(SystemData.mModelMatrix);
+        MatVec::LoadIdentity(SystemData.mModelMatrix);
         GLES2::calcCordinate(shaderobj, SystemData.mModelMatrix, SystemData.mVpMatrix, SystemData.mMvpMatrix, SystemData.mNormalMatrix);
         // 描画
 //        __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa vertexサイズ=%d", (int)(drawinfo.mVirtexs.size()));
@@ -302,25 +302,25 @@ void GLES2::draw() {
 void GLES2::calcCordinate(GlShaderObj &aShaderObj, std::array<float, 16> &aModelMatrix, std::array<float, 16> &aViewProjMatrix, std::array<float, 16> &aMvpMatrix, std::array<float, 16> &aNormalMatrix) {
     GlRenderData &RenderData = GlRenderData::GetIns();
 
-    aModelMatrix = m::MatVec::GetRotatef(-RenderData.mTouchAngleX, 1.0f, 0.0f, 0.0f);
-    m::MatVec::Rotatef(aModelMatrix, RenderData.mTouchAngleY, 0.0f, 1.0f, 0.0f);
-    m::MatVec::Translatef(aModelMatrix, 0.0f, -150.0f, 0.0f);
-    m::MatVec::Scalef(aModelMatrix, RenderData.mScale, RenderData.mScale, RenderData.mScale);
+    aModelMatrix = MatVec::GetRotatef(-RenderData.mTouchAngleX, 1.0f, 0.0f, 0.0f);
+    MatVec::Rotatef(aModelMatrix, RenderData.mTouchAngleY, 0.0f, 1.0f, 0.0f);
+    MatVec::Translatef(aModelMatrix, 0.0f, -150.0f, 0.0f);
+    MatVec::Scalef(aModelMatrix, RenderData.mScale, RenderData.mScale, RenderData.mScale);
 
     // 法線の変換行列を計算し、u_NormalMatrixに設定する
     std::array<float, 16> inv = {0};
-    bool ret = m::MatVec::invertf(inv, aModelMatrix);
+    bool ret = MatVec::invertf(inv, aModelMatrix);
     if(ret) {
-        m::MatVec::transposef(aNormalMatrix, inv);
+        MatVec::transposef(aNormalMatrix, inv);
         glUniformMatrix4fv(aShaderObj.u_NormalMatrixId, 1, false, aNormalMatrix.data());
     }
     else {
-        aNormalMatrix = m::Matrix4f::IDENTITY;
+        aNormalMatrix = Matrix4f::IDENTITY;
         glUniformMatrix4fv(aShaderObj.u_NormalMatrixId, 1, false, aNormalMatrix.data());
     }
 
     /* モデルビュー投影行列を計算し、u_MvpMatrixに設定する */
-    m::MatVec::MultMatrixf(aMvpMatrix, aViewProjMatrix, aModelMatrix);
+    MatVec::MultMatrixf(aMvpMatrix, aViewProjMatrix, aModelMatrix);
     glUniformMatrix4fv(aShaderObj.u_MvpMatrixId, 1, false, aMvpMatrix.data());
 }
 

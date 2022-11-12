@@ -31,10 +31,10 @@ typedef struct {
 
 class DrawInfo {
 public:
-    std::vector<m::Vector3f> mVirtexs;       /* 頂点情報 */
-    std::vector<m::Vector3f> mNormals;       /* 法線情報 */
-    std::vector<m::UV>         mUVs;           /* UV情報 */
-    std::vector<m::Color4>     mColors;        /* カラー情報 */
+    std::vector<Vector3f> mVirtexs;       /* 頂点情報 */
+    std::vector<Vector3f> mNormals;       /* 法線情報 */
+    std::vector<UV>         mUVs;           /* UV情報 */
+    std::vector<Color4>     mColors;        /* カラー情報 */
     int    mTexWidth;      /* 画像データ幅 */
     int    mTexHeight;     /* 画像データ高 */
     int    mTexBinSize;    /* 画像データ幅 */
