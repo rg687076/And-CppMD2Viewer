@@ -12,6 +12,7 @@
 #endif  // __ANDROID__
 #include "Md2Model.h"
 #include "CgViewer.h"
+#include "GlObj.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -179,6 +180,10 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     gMutex.lock();  /* onStart()の実行終了を待つ */
 
+    /* OpenGL初期化(GL系は、このタイミングでないとエラーになる) */
+    GlObj::GlInit();
+
+    GlObj::enable(GL_DEPTH_TEST);
     bool ret = CG3DViewer::init();
     if( !ret) return false;
 
@@ -194,6 +199,11 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv
     AppData::GetIns().mAssets.clear();
 
     /* MD2 */
+    /* GL系モデル初期化(GL系は、このタイミングでないとエラーになる) */
+    bool ret7 = CgViewer::InitModel(gTmpBinData3s);
+    gTmpBinData3s.clear();
+    if(!ret7)
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
     gMutex.unlock();
     return true;

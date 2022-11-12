@@ -1,13 +1,16 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <android/log.h>
 #include "Md2Model.h"
 #include "TexObj.h"
+#include "GlObj.h"
 
 std::map<std::string, TmpBinData2> gTmpRgbDatas;   /* 読込み用の一時置き場 */
 
 Md2Model::~Md2Model() {
+    std::unordered_map<int, std::pair<int, int>>().swap(mFrameIndices);
 }
 
 /* binデータからMd2データを読込む */
@@ -84,5 +87,51 @@ bool Md2Model::loadTexture(const std::string &key, const std::vector<char> &texb
     }
 
     return retbool;
+}
+
+/* TextureデータをOpenGLで使えるようにする */
+bool Md2Model::initTexture(const std::string &key) {
+    TmpBinData2 bindata = gTmpRgbDatas.at(key);
+    /* OpenGLのTexture初期化 */
+    auto[boolret, texid] = GlObj::InitTexture(bindata.mWkWidth, bindata.mWkHeight, bindata.mWkRgbaData.data());
+    if(boolret)
+        mTexId = texid;
+
+    /* 解放処理 */
+    bindata.mWkWidth = 0;
+    bindata.mWkHeight= 0;
+    std::vector<char>().swap(bindata.mWkRgbaData);
+    gTmpRgbDatas.erase(key);
+    if(gTmpRgbDatas.size() == 0)
+        gTmpRgbDatas.clear();
+
+    return boolret;
+}
+
+/* シェーダをOpenGLで使えるようにする */
+bool Md2Model::initShaders(const std::string &key, const TmpBinData3 &tmpbindata3) {
+    /* シェーダ読込み */
+    auto[retboot, progid] = GlObj::LoadShaders(tmpbindata3.mWkVshStrData, tmpbindata3.mWkFshStrData);
+    if( !retboot) {
+        mProgramId = -1;
+        return false;
+    }
+    mProgramId = progid;
+
+    /* シェーダのAttributeにデータ一括設定 */
+    auto[retbool, retAnimFrameS2e, retVboID, retCurPosAttrib, retNextPosAttrib, retTexCoordAttrib] = GlObj::setAttribute(mProgramId, mMdlData.numTotalFrames, mMdlData.vertexList, mMdlData.polyIndex, mMdlData.st);
+    if( !retbool) {
+        GlObj::DeleteShaders(mProgramId);
+        mProgramId =-1;
+        return false;
+    }
+
+    mFrameIndices  = std::move(retAnimFrameS2e);
+    mVboId         = retVboID;
+    mCurPosAttrib  = retCurPosAttrib;
+    mNextPosAttrib = retNextPosAttrib;
+    mTexCoordAttrib= retTexCoordAttrib;
+
+    return true;
 }
 

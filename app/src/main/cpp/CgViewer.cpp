@@ -34,3 +34,18 @@ bool CgViewer::LoadModel(std::map<std::string, TmpBinData1> &tmpbindata1) {
     return true;
 }
 
+/* Md2モデル初期化(特にOpenGL系は、onSurfaceCreated()ドリブンで動作しないとエラーになる) */
+bool CgViewer::InitModel(const std::map<std::string, TmpBinData3> &tmpbindata3s) {
+    for(auto &[key, value] : gMd2Models) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model Init start (%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        /* テクスチャInit */
+        bool ret2 = value.initTexture(key);
+        if( !ret2) return false;
+        /* シェーダ初期化 */
+        bool ret3 = value.initShaders(key, tmpbindata3s.at(key));
+        if( !ret3) return false;
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Shader Init end(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    }
+    return true;
+}
+
