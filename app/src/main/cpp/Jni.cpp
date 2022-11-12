@@ -41,7 +41,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_init(JNIEnv *env, jclas
     if(!ret0) return false;
     AppData::GetIns().mAssets = std::move(AssetDatas);
 
-    return CG3DViewer::init();
+    return true;
 }
 
 /* Assets読込み */
@@ -178,6 +178,9 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv *env, jclass clazz) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     gMutex.lock();  /* onStart()の実行終了を待つ */
+
+    bool ret = CG3DViewer::init();
+    if( !ret) return false;
 
     /* MQO */
     std::map<std::string, std::vector<char>> &AssetDatas = AppData::GetIns().mAssets;
