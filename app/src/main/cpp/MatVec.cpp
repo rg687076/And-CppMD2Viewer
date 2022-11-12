@@ -1521,17 +1521,7 @@ std::tuple<bool, std::array<float, 16>> MatVec::invertf(const std::array<float, 
 	return {retboot, retmat};
 }
 
-void MatVec::transposef(std::array<float, 16> &retmat, const std::array<float, 16> &matrix) {
-	for (int i = 0; i < 4; i++) {
-		int mBase = i * 4;
-		retmat[i	 ] = matrix[mBase	];
-		retmat[i + 4 ] = matrix[mBase + 1];
-		retmat[i + 8 ] = matrix[mBase + 2];
-		retmat[i + 12] = matrix[mBase + 3];
-	}
-}
-
-std::array<float, 16> MatVec::transposef2(const std::array<float, 16> &mat) {
+std::array<float, 16> MatVec::transposef(const std::array<float, 16> &mat) {
 	std::array<float, 16> retmat = {};
 	for (int i = 0; i < 4; i++) {
 		retmat[i	 ] = mat[i*4	];
