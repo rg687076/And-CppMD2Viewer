@@ -1137,25 +1137,6 @@ Matrix4f MatVec::LoadIdentity() {
 	return ret;
 }
 
-void MatVec::MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &m) {
-	std::array<float, 16> a = retmat;
-
-#define A(row, col) a[(col << 2) + row]
-#define M(row, col) m[(col << 2) + row]
-#define MAT(row, col) retmat[(col << 2) + row]
-
-	for (int i = 0; i < 4; i++) {
-		MAT(i, 0) = A(i, 0) * M(0, 0) + A(i, 1) * M(1, 0) + A(i, 2) * M(2, 0) + A(i, 3) * M(3, 0);
-		MAT(i, 1) = A(i, 0) * M(0, 1) + A(i, 1) * M(1, 1) + A(i, 2) * M(2, 1) + A(i, 3) * M(3, 1);
-		MAT(i, 2) = A(i, 0) * M(0, 2) + A(i, 1) * M(1, 2) + A(i, 2) * M(2, 2) + A(i, 3) * M(3, 2);
-		MAT(i, 3) = A(i, 0) * M(0, 3) + A(i, 1) * M(1, 3) + A(i, 2) * M(2, 3) + A(i, 3) * M(3, 3);
-	}
-
-#undef A
-#undef M
-#undef MAT
-}
-
 std::array<float, 16> MatVec::multMatrixf2(const std::array<float, 16> &a, const std::array<float, 16> &m) {
 	std::array<float, 16> retmat = a;
 
