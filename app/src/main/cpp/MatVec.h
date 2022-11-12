@@ -450,10 +450,9 @@ const float _axis_convert_matrix[23][3][3] = {
 
 class MatVec {
 public:
-	static void LoadMatrix(std::array<float, 16> &retmat, const std::array<float, 16> &a);
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &m);
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &a, const std::array<float, 16> &m);
-	static void normalize(std::array<float, 3> &v);
+	static std::array<float, 3> normalize(const std::array<float, 3> &v);
 	static void cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2, std::array<float, 3> &result);
 	static std::array<float, 16> GetPerspectivef(float fovy, float aspect, float zNear, float zFar);
 	static std::array<float, 16> GetLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz);

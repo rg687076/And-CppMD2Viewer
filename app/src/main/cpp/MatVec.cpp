@@ -1137,13 +1137,8 @@ Matrix4f MatVec::LoadIdentity() {
 	return ret;
 }
 
-void MatVec::LoadMatrix(std::array<float, 16> &retmat, const std::array<float, 16> &a) {
-	retmat = a;
-}
-
 void MatVec::MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &m) {
-	std::array<float, 16> a = {};
-	LoadMatrix(a, retmat);
+	std::array<float, 16> a = retmat;
 
 #define A(row, col) a[(col << 2) + row]
 #define M(row, col) m[(col << 2) + row]
@@ -1202,14 +1197,17 @@ Matrix4f MatVec::MultMatrix(const Matrix4f &a, const Matrix4f &m) {
 /**********/
 /* 正規化 */
 /**********/
-void MatVec::normalize(std::array<float, 3> &v) {
-	float l = (float)sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+std::array<float, 3> MatVec::normalize(const std::array<float, 3> &v) {
+	std::array<float, 3> retv = {};
+	float l = (float)sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 	if (l == 0.0f)
-		return;
+		return retv;
 
-	v[0] /= l;
-	v[1] /= l;
-	v[2] /= l;
+	retv[0] = v[0] / l;
+	retv[1] = v[1] / l;
+	retv[2] = v[2] / l;
+
+	return retv;
 }
 
 /********/
@@ -1285,11 +1283,11 @@ std::array<float, 16> MatVec::GetLookAtf(float eyex, float eyey, float eyez, flo
 	up[1] = upy;
 	up[2] = upz;
 
-	MatVec::normalize(view);
-	MatVec::normalize(up);
+	view = MatVec::normalize(view);
+	up   = MatVec::normalize(up);
 
 	MatVec::cross(view, up, side);
-	MatVec::normalize(side);
+	side = MatVec::normalize(side);
 
 	MatVec::cross(side, view, up);
 
