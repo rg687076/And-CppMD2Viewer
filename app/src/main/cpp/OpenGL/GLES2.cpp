@@ -320,7 +320,7 @@ void GLES2::calcCordinate(GlShaderObj &aShaderObj, std::array<float, 16> &aModel
     }
 
     /* モデルビュー投影行列を計算し、u_MvpMatrixに設定する */
-    aMvpMatrix = MatVec::multMatrixf2(aViewProjMatrix, aModelMatrix);
+    aMvpMatrix = MatVec::multMatrixf(aViewProjMatrix, aModelMatrix);
     glUniformMatrix4fv(aShaderObj.u_MvpMatrixId, 1, false, aMvpMatrix.data());
 }
 

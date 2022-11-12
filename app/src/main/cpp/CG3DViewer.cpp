@@ -33,7 +33,7 @@ void CG3DViewer::setDrawArea(int width, int height) {
     // ビュー投影行列を計算
     std::array<float, 16> projMatrix = MatVec::getPerspectivef(30.0, (float) width / height, 1.0, 5000.0);
     std::array<float, 16> viewMatrix = MatVec::getLookAtf(0.0f, 250.0f, 1000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    GlRenderData::GetIns().mVpMatrix = MatVec::multMatrixf2(projMatrix, viewMatrix);
+    GlRenderData::GetIns().mVpMatrix = MatVec::multMatrixf(projMatrix, viewMatrix);
     return;
 }
 
