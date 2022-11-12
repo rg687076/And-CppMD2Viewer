@@ -453,7 +453,7 @@ public:
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &m);
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &a, const std::array<float, 16> &m);
 	static std::array<float, 3> normalize(const std::array<float, 3> &v);
-	static void cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2, std::array<float, 3> &result);
+	static std::array<float, 3> cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2);
 	static std::array<float, 16> GetPerspectivef(float fovy, float aspect, float zNear, float zFar);
 	static std::array<float, 16> GetLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz);
 	static std::array<float, 16> GetRotatef(float angle, float x, float y, float z);

@@ -1213,10 +1213,12 @@ std::array<float, 3> MatVec::normalize(const std::array<float, 3> &v) {
 /********/
 /* 外積 */
 /********/
-void MatVec::cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2, std::array<float, 3> &result) {
-	result[0] = v1[1] * v2[2] - v1[2] * v2[1];
-	result[1] = v1[2] * v2[0] - v1[0] * v2[2];
-	result[2] = v1[0] * v2[1] - v1[1] * v2[0];
+std::array<float, 3> MatVec::cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2) {
+	std::array<float, 3> retmat = {};
+	retmat[0] = v1[1]*v2[2] - v1[2]*v2[1];
+	retmat[1] = v1[2]*v2[0] - v1[0]*v2[2];
+	retmat[2] = v1[0]*v2[1] - v1[1]*v2[0];
+	return retmat;
 }
 
 /*******************/
@@ -1286,10 +1288,10 @@ std::array<float, 16> MatVec::GetLookAtf(float eyex, float eyey, float eyez, flo
 	view = MatVec::normalize(view);
 	up   = MatVec::normalize(up);
 
-	MatVec::cross(view, up, side);
+	side = MatVec::cross(view, up);
 	side = MatVec::normalize(side);
 
-	MatVec::cross(side, view, up);
+	up   = MatVec::cross(side, view);
 
 #define M(row, col) m[(col << 2) + row]
 
