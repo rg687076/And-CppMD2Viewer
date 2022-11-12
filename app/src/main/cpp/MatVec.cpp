@@ -1531,6 +1531,17 @@ void MatVec::transposef(std::array<float, 16> &retmat, const std::array<float, 1
 	}
 }
 
+std::array<float, 16> MatVec::transposef2(const std::array<float, 16> &mat) {
+	std::array<float, 16> retmat = {};
+	for (int i = 0; i < 4; i++) {
+		retmat[i	 ] = mat[i*4	];
+		retmat[i +  4] = mat[i*4 + 1];
+		retmat[i +  8] = mat[i*4 + 2];
+		retmat[i + 12] = mat[i*4 + 3];
+	}
+	return retmat;
+}
+
 /*******************************************************************/
 /* 回転行列生成													*/
 /* * @param xDeg Angle (in degrees(°)) of rotation around axis X. */

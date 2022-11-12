@@ -310,7 +310,7 @@ void GLES2::calcCordinate(GlShaderObj &aShaderObj, std::array<float, 16> &aModel
     // 法線の変換行列を計算し、u_NormalMatrixに設定する
     auto [retbool, invmat] = MatVec::invertf(aModelMatrix);
     if(retbool) {
-        MatVec::transposef(aNormalMatrix, invmat);
+        aNormalMatrix = MatVec::transposef2(invmat);
         glUniformMatrix4fv(aShaderObj.u_NormalMatrixId, 1, false, aNormalMatrix.data());
     }
     else {

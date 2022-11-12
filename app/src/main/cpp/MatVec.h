@@ -461,6 +461,7 @@ public:
 	static std::array<float, 16> scalef(const std::array<float, 16> &mat, float x, float y, float z);
 	static std::tuple<bool, std::array<float, 16>> invertf(const std::array<float, 16> &mat);
 	static void transposef(std::array<float, 16> &retmat, const std::array<float, 16> &matrix);
+	static std::array<float, 16> transposef2(const std::array<float, 16> &mat);
 
 	static Matrix4f LoadIdentity();
 	static Matrix4f MultMatrix(const Matrix4f &a, const Matrix4f &m);
