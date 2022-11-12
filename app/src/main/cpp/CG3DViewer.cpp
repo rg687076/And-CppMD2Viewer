@@ -28,7 +28,7 @@ bool CG3DViewer::init() {
 }
 
 void CG3DViewer::setDrawArea(int width, int height) {
-    glViewport(0, 0, width, height);     // 表示領域を設定する
+//    glViewport(0, 0, width, height);     // 表示領域を設定する
 
     // ビュー投影行列を計算
     std::array<float, 16> projMatrix = m::MatVec::GetPerspectivef(30.0, (float) width / height, 1.0, 5000.0);

@@ -183,11 +183,10 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv
     /* OpenGL初期化(GL系は、このタイミングでないとエラーになる) */
     GlObj::GlInit();
 
+    /* MQO */
     GlObj::enable(GL_DEPTH_TEST);
     bool ret = CG3DViewer::init();
     if( !ret) return false;
-
-    /* MQO */
     std::map<std::string, std::vector<char>> &AssetDatas = AppData::GetIns().mAssets;
     GlRenderData &RenderData = GlRenderData::GetIns();
     auto [ret0, MqoInfo] = MQO::init(AssetDatas.at("vignette_ppp.mqo"));
@@ -211,6 +210,11 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv
 
 /* onSurfaceChanged */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *env, jclass clazz, jint width, jint height) {
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "w=%d h=%d %s %s(%d)", width, height, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+    /* setViewport() */
+    GlObj::setViewport(0, 0, width, height);
+
 	CG3DViewer::setDrawArea(width, height);
 	return;
 }

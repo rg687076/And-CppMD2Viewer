@@ -26,6 +26,7 @@ public:
     static RetShaderAttribs setAttribute(GLuint programId, int totalframes,
                                          const std::vector<vertex> &vertexs, const std::vector<mesh> &polyIndexs, const std::vector<texstcoord> &sts);
     static void DeleteShaders(GLuint programId);
+    static void setViewport(int x, int y, int width, int height);
 
 private:
     static bool CheckCompileErrors(GLuint sid, EShaderType type);
