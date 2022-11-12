@@ -5,7 +5,7 @@ project("cppmd2viewer")
 add_library(jni SHARED Jni.cpp)
 add_library(md2viewer SHARED CgViewer.cpp Md2Model.cpp TexObj.cpp)
 add_library(globj SHARED GlObj.cpp)
-add_library(cg3dviewer SHARED CG3DViewer.cpp OpenGL/GLES2.cpp format/MatVec.cpp format/MQO.cpp)
+add_library(cg3dviewer SHARED CG3DViewer.cpp OpenGL/GLES2.cpp MatVec.cpp format/MQO.cpp)
 
 find_library(log-lib log)
 

@@ -6,7 +6,7 @@
 #define ANDCG3DVIEWER_GLES2_H
 #include <vector>
 #include <array>
-#include "../format/MatVec.h"
+#include "../MatVec.h"
 
 /* glシェーダ関連オブジェクトの管理 構造体 */
 typedef struct {

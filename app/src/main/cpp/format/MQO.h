@@ -9,7 +9,7 @@
 #include <string>
 #include <iterator>
 #include <map>
-#include "MatVec.h"
+#include "../MatVec.h"
 #include "../OpenGL/GLES2.h"
 
 /* マテリアル管理の構造体 */

@@ -7,7 +7,6 @@
 
 #include <array>
 #include <stdio.h>
-#include "../CG3DCom.h"
 #ifdef __ANDROID__
 #include <android/log.h>
 #endif /* __ANDROID__ */
