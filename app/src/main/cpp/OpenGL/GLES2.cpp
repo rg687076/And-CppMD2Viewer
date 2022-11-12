@@ -302,7 +302,7 @@ void GLES2::draw() {
 void GLES2::calcCordinate(GlShaderObj &aShaderObj, std::array<float, 16> &aModelMatrix, std::array<float, 16> &aViewProjMatrix, std::array<float, 16> &aMvpMatrix, std::array<float, 16> &aNormalMatrix) {
     GlRenderData &RenderData = GlRenderData::GetIns();
 
-    aModelMatrix = MatVec::GetRotatef(-RenderData.mTouchAngleX, 1.0f, 0.0f, 0.0f);
+    aModelMatrix = MatVec::getRotatef(-RenderData.mTouchAngleX, 1.0f, 0.0f, 0.0f);
     MatVec::Rotatef(aModelMatrix, RenderData.mTouchAngleY, 0.0f, 1.0f, 0.0f);
     MatVec::Translatef(aModelMatrix, 0.0f, -150.0f, 0.0f);
     MatVec::Scalef(aModelMatrix, RenderData.mScale, RenderData.mScale, RenderData.mScale);

@@ -454,9 +454,9 @@ public:
 	static void MultMatrixf(std::array<float, 16> &retmat, const std::array<float, 16> &a, const std::array<float, 16> &m);
 	static std::array<float, 3> normalize(const std::array<float, 3> &v);
 	static std::array<float, 3> cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2);
-	static std::array<float, 16> GetPerspectivef(float fovy, float aspect, float zNear, float zFar);
-	static std::array<float, 16> GetLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz);
-	static std::array<float, 16> GetRotatef(float angle, float x, float y, float z);
+	static std::array<float, 16> getPerspectivef(float fovy, float aspect, float zNear, float zFar);
+	static std::array<float, 16> getLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz);
+	static std::array<float, 16> getRotatef(float angle, float x, float y, float z);
 	static void Translatef(std::array<float, 16> &retmat, float x, float y, float z);
 	static void Rotatef(std::array<float, 16> &retmat, float angle, float x, float y, float z);
 	static void Scalef(std::array<float, 16> &retmat, float x, float y, float z);

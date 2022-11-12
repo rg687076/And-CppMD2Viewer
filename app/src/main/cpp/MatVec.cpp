@@ -1224,7 +1224,7 @@ std::array<float, 3> MatVec::cross(const std::array<float, 3> &v1, const std::ar
 /*******************/
 /* setPerspectivef */
 /*******************/
-std::array<float, 16> MatVec::GetPerspectivef(float fovy, float aspect, float zNear, float zFar) {
+std::array<float, 16> MatVec::getPerspectivef(float fovy, float aspect, float zNear, float zFar) {
 	std::array<float, 16> retMat = {Matrix4f::IDENTITY};
 
 	std::array<float, 16> m = {};
@@ -1272,7 +1272,7 @@ std::array<float, 16> MatVec::GetPerspectivef(float fovy, float aspect, float zN
 /*******************/
 /*   setLookAtf	*/
 /*******************/
-std::array<float, 16> MatVec::GetLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz) {
+std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz) {
 	std::array<float, 16> retmat = Matrix4f::IDENTITY;
 	std::array<float, 3> view = {}, up = {}, side = {};
 	std::array<float, 16> m = {};
@@ -1341,7 +1341,7 @@ void MatVec::Translatef(std::array<float, 16> &retmat, float x, float y, float z
 /* @param z Z axis component */
 /******************/
 void MatVec::Rotatef(std::array<float, 16> &retmat, float angle, float x, float y, float z) {
-	std::array<float, 16> rotm = MatVec::GetRotatef(angle, x, y, z);
+	std::array<float, 16> rotm = MatVec::getRotatef(angle, x, y, z);
 	MatVec::MultMatrixf(retmat, rotm);
 }
 
@@ -1353,7 +1353,7 @@ void MatVec::Rotatef(std::array<float, 16> &retmat, float angle, float x, float 
 /* @param y Y axis component */
 /* @param z Z axis component */
 /******************/
-std::array<float, 16> MatVec::GetRotatef(float angle, float x, float y, float z) {
+std::array<float, 16> MatVec::getRotatef(float angle, float x, float y, float z) {
 	std::array<float, 16> rm = {};
 	angle *= (float) (PI / 180.0f);
 	float s = (float) std::sin(angle);
