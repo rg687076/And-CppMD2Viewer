@@ -6,7 +6,6 @@
 #define MQOVIEWER_TKSMATRIXVECTOR_H
 
 #include <array>
-#include <stdio.h>
 #ifdef __ANDROID__
 #include <android/log.h>
 #endif /* __ANDROID__ */
@@ -325,7 +324,6 @@ typedef struct QUAD {
 class Matrix4f
 {
 public:
-	static const std::array<float, 16> IDENTITY;
 	std::array<float, 16> mM ={0};
 
 public:
@@ -333,7 +331,7 @@ public:
 	Matrix4f() : cnt(rand()) { __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa constructor%d %s() s %d", cnt, __func__, __LINE__); }
 	Matrix4f(const Matrix4f &src) : cnt(rand()) { mM = src.mM; __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa copy-constructor%d %s() s %d", cnt, __func__, __LINE__); }
 	Matrix4f(const Matrix4f &&src) : mM(src.mM), cnt(rand()) { __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa move-constructor%d %s() s %d", cnt, __func__, __LINE__); }
-	Matrix4f(const std::array<float, 16> &src) : mM(IDENTITY), cnt(rand()) { __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa arg-constructor%d %s() s %d", cnt, __func__, __LINE__); }
+	Matrix4f(const std::array<float, 16> &src) : mM(/*MatVec::IDENTITY*/{0}), cnt(rand()) { __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa arg-constructor%d %s() s %d", cnt, __func__, __LINE__); }
 	Matrix4f(float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8, float a9, float a10, float a11, float a12, float a13, float a14, float a15);
 	~Matrix4f(){ __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa destructor%d %s() s %d", cnt, __func__, __LINE__); };
 	void setIdentity();
@@ -450,28 +448,31 @@ const float _axis_convert_matrix[23][3][3] = {
 
 class MatVec {
 public:
-	static std::array<float, 3> normalize(const std::array<float, 3> &v);
-	static std::array<float, 3> cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2);
-	static std::array<float, 16> getPerspectivef(float fovy, float aspect, float zNear, float zFar);
-	static std::array<float, 16> getLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz);
-	static std::array<float, 16> getRotatef(float angle, float x, float y, float z);
-	static std::array<float, 16> multMatrixf(const std::array<float, 16> &mat, const std::array<float, 16> &m);
-	static std::array<float, 16> translatef(const std::array<float, 16> &mat, float x, float y, float z);
-	static std::array<float, 16> rotatef(const std::array<float, 16> &mat, float angle, float x, float y, float z);
-	static std::array<float, 16> scalef(const std::array<float, 16> &mat, float x, float y, float z);
-	static std::tuple<bool, std::array<float, 16>> invertf(const std::array<float, 16> &mat);
-	static std::array<float, 16> transposef(const std::array<float, 16> &mat);
+    static const std::array<float, 16> IDENTITY;
 
-	static Matrix4f LoadIdentity();
-	static Matrix4f MultMatrix(const Matrix4f &a, const Matrix4f &m);
-	static Matrix4f createRotation(float xDeg, float yDeg, float zDeg);
-	static Matrix4f createTranslation(float x, float y, float z, float w=1);
-	static Matrix4f createScale(float sx, float sy, float sz);
-	static Matrix4f createLookAt(const Vector3f &eyePos, const Vector3f &centerPos, const Vector3f &upDir);
-	static Matrix4f createFrustum(float left, float right, float bottom, float top, float zNear, float zFar);
-	static Matrix4f createOrtho(float left, float right, float bottom, float top, float zNear, float zFar);
-	static Matrix4f createAxisConversion(Axis fromfront= Axis::Y, Axis fromup=Axis::Z, Axis tofront= Axis::Y, Axis toup= Axis::Z);
-	static Matrix4f createNormalize(const Matrix4f &mat);
+public:
+    static std::array<float, 3> normalize(const std::array<float, 3> &vec);
+    static std::array<float, 3> cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2);
+    static std::array<float, 16> getPerspectivef(float fovy, float aspect, float near, float far);
+    static std::array<float, 16> getLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz);
+    static std::array<float, 16> getRotatef(float angle, float x, float y, float z);
+    static std::array<float, 16> multMatrixf(const std::array<float, 16> &mat, const std::array<float, 16> &m);
+    static std::array<float, 16> translatef(const std::array<float, 16> &mat, float x, float y, float z);
+    static std::array<float, 16> rotatef(const std::array<float, 16> &mat, float angle, float x, float y, float z);
+    static std::array<float, 16> scalef(const std::array<float, 16> &mat, float x, float y, float z);
+    static std::tuple<bool, std::array<float, 16>> invertf(const std::array<float, 16> &mat);
+    static std::array<float, 16> transposef(const std::array<float, 16> &mat);
+
+    static Matrix4f LoadIdentity();
+    static Matrix4f MultMatrix(const Matrix4f &a, const Matrix4f &m);
+    static Matrix4f createRotation(float xDeg, float yDeg, float zDeg);
+    static Matrix4f createTranslation(float x, float y, float z, float w=1);
+    static Matrix4f createScale(float sx, float sy, float sz);
+    static Matrix4f createLookAt(const Vector3f &eyePos, const Vector3f &centerPos, const Vector3f &upDir);
+    static Matrix4f createFrustum(float left, float right, float bottom, float top, float zNear, float zFar);
+    static Matrix4f createOrtho(float left, float right, float bottom, float top, float zNear, float zFar);
+    static Matrix4f createAxisConversion(Axis fromfront= Axis::Y, Axis fromup=Axis::Z, Axis tofront= Axis::Y, Axis toup= Axis::Z);
+    static Matrix4f createNormalize(const Matrix4f &mat);
 };
 
 #endif //MQOVIEWER_TKSMATRIXVECTOR_H

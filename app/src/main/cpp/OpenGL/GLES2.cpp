@@ -290,7 +290,7 @@ void GLES2::draw() {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, drawinfo.mTexWidth, drawinfo.mTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, drawinfo.mTexBinData);
         }
 
-        SystemData.mModelMatrix = Matrix4f::IDENTITY;
+        SystemData.mModelMatrix = MatVec::IDENTITY;
         GLES2::calcCordinate(shaderobj, SystemData.mModelMatrix, SystemData.mVpMatrix, SystemData.mMvpMatrix, SystemData.mNormalMatrix);
         // 描画
 //        __android_log_print(ANDROID_LOG_DEBUG, "aaaaa", "aaaaa vertexサイズ=%d", (int)(drawinfo.mVirtexs.size()));
@@ -314,7 +314,7 @@ void GLES2::calcCordinate(GlShaderObj &aShaderObj, std::array<float, 16> &aModel
         glUniformMatrix4fv(aShaderObj.u_NormalMatrixId, 1, false, aNormalMatrix.data());
     }
     else {
-        aNormalMatrix = Matrix4f::IDENTITY;
+        aNormalMatrix = MatVec::IDENTITY;
         glUniformMatrix4fv(aShaderObj.u_NormalMatrixId, 1, false, aNormalMatrix.data());
     }
 

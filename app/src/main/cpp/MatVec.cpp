@@ -782,13 +782,6 @@ float angle(const Vector4f &u, const Vector4f &v) {
 /**************/
 /* Matrix4f */
 /**************/
-const std::array<float, 16> Matrix4f::IDENTITY = {
-	1.0, 0.0, 0.0, 0.0,
-	0.0, 1.0, 0.0, 0.0,
-	0.0, 0.0, 1.0, 0.0,
-	0.0, 0.0, 0.0, 1.0
-};
-
 Matrix4f::Matrix4f(float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8, float a9, float a10, float a11, float a12, float a13, float a14, float a15) {
 	std::array<float, 16> &M = this->mM;
 	M[0] = a0;  M[1] = a1;  M[2] = a2;  M[3] = a3;
@@ -798,7 +791,7 @@ Matrix4f::Matrix4f(float a0, float a1, float a2, float a3, float a4, float a5, f
 }
 
 void Matrix4f::setIdentity() {
-	this->mM = Matrix4f::IDENTITY;
+	this->mM = MatVec::IDENTITY;
 }
 
 /* =演算子 */
@@ -1133,29 +1126,8 @@ bool isSameAxle(const Axis &a1, const Axis &a2) {
 /**************/
 Matrix4f MatVec::LoadIdentity() {
 	Matrix4f ret;
-	ret.mM = Matrix4f::IDENTITY;
+	ret.mM = MatVec::IDENTITY;
 	return ret;
-}
-
-std::array<float, 16> MatVec::multMatrixf(const std::array<float, 16> &a, const std::array<float, 16> &m) {
-	std::array<float, 16> retmat = a;
-
-#define A(row, col) a[(col << 2) + row]
-#define M(row, col) m[(col << 2) + row]
-#define MAT(row, col) retmat[(col << 2) + row]
-
-	for (int i = 0; i < 4; i++) {
-		MAT(i, 0) = A(i, 0) * M(0, 0) + A(i, 1) * M(1, 0) + A(i, 2) * M(2, 0) + A(i, 3) * M(3, 0);
-		MAT(i, 1) = A(i, 0) * M(0, 1) + A(i, 1) * M(1, 1) + A(i, 2) * M(2, 1) + A(i, 3) * M(3, 1);
-		MAT(i, 2) = A(i, 0) * M(0, 2) + A(i, 1) * M(1, 2) + A(i, 2) * M(2, 2) + A(i, 3) * M(3, 2);
-		MAT(i, 3) = A(i, 0) * M(0, 3) + A(i, 1) * M(1, 3) + A(i, 2) * M(2, 3) + A(i, 3) * M(3, 3);
-	}
-
-#undef A
-#undef M
-#undef MAT
-
-	return retmat;
 }
 
 Matrix4f MatVec::MultMatrix(const Matrix4f &a, const Matrix4f &m) {
@@ -1179,52 +1151,51 @@ Matrix4f MatVec::MultMatrix(const Matrix4f &a, const Matrix4f &m) {
 	return ret;
 }
 
-/**********/
-/* 正規化 */
-/**********/
-std::array<float, 3> MatVec::normalize(const std::array<float, 3> &v) {
-	std::array<float, 3> retv = {};
-	float l = (float)sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-	if (l == 0.0f)
-		return retv;
+/* 単位行列 */
+const std::array<float, 16> MatVec::IDENTITY = {
+		1.0, 0.0, 0.0, 0.0,
+		0.0, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0
+};
 
-	retv[0] = v[0] / l;
-	retv[1] = v[1] / l;
-	retv[2] = v[2] / l;
+/* ベクトルを正規化 */
+std::array<float, 3> MatVec::normalize(const std::array<float, 3> &vec) {
+    std::array<float, 3> retvec = {};
+    float l = (float)sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
+    if (l == 0.0f)
+        return retvec;
 
-	return retv;
+	retvec[0] = vec[0] / l;
+	retvec[1] = vec[1] / l;
+	retvec[2] = vec[2] / l;
+
+    return retvec;
 }
 
-/********/
-/* 外積 */
-/********/
+/* ベクトル同士を外積(ベクトルのみ) */
 std::array<float, 3> MatVec::cross(const std::array<float, 3> &v1, const std::array<float, 3> &v2) {
-	std::array<float, 3> retmat = {};
-	retmat[0] = v1[1]*v2[2] - v1[2]*v2[1];
-	retmat[1] = v1[2]*v2[0] - v1[0]*v2[2];
-	retmat[2] = v1[0]*v2[1] - v1[1]*v2[0];
-	return retmat;
+	std::array<float, 3> retvec = {};
+	retvec[0] = v1[1]*v2[2] - v1[2]*v2[1];
+	retvec[1] = v1[2]*v2[0] - v1[0]*v2[2];
+	retvec[2] = v1[0]*v2[1] - v1[1]*v2[0];
+	return retvec;
 }
 
-/*******************/
-/* setPerspectivef */
-/*******************/
-std::array<float, 16> MatVec::getPerspectivef(float fovy, float aspect, float zNear, float zFar) {
-	std::array<float, 16> retMat = {Matrix4f::IDENTITY};
+/* 投影行列を生成 */
+std::array<float, 16> MatVec::getPerspectivef(float fovy, float aspect, float near, float far) {
+	std::array<float, 16> retMat = {MatVec::IDENTITY};
+
+	float n2    = near + near;
+	float bottom= (float)tan(fovy / 2.0f * PI / 180.0) * near;
+	float top   = -bottom;
+	float right = aspect * bottom;
+	float left  = -right;
+	float xx = 1.0f / (left - right);
+	float yy = 1.0f / (bottom - top);
+	float zz = 1.0f / (near - far);
 
 	std::array<float, 16> m = {};
-	float left, right, top, bottom;
-	float xx, yy, zz;
-	float n2 = zNear + zNear;
-
-	bottom = (float)tan(fovy / 2.0f * PI / 180.0) * zNear;
-	top = -bottom;
-	right = aspect * bottom;
-	left = -right;
-	xx = 1.0f / (left - right);
-	yy = 1.0f / (bottom - top);
-	zz = 1.0f / (zNear - zFar);
-
 #define M(row, col) m[col * 4 + row]
 
 	M(0, 0) = n2 * xx;
@@ -1239,8 +1210,8 @@ std::array<float, 16> MatVec::getPerspectivef(float fovy, float aspect, float zN
 
 	M(2, 0) = 0.0f;
 	M(2, 1) = 0.0f;
-	M(2, 2) = -(zFar + zNear) * zz;
-	M(2, 3) = -(n2 * zFar) * zz;
+	M(2, 2) = -(far + near) * zz;
+	M(2, 3) = -(n2 * far) * zz;
 
 	M(3, 0) = 0.0f;
 	M(3, 1) = 0.0f;
@@ -1254,11 +1225,32 @@ std::array<float, 16> MatVec::getPerspectivef(float fovy, float aspect, float zN
 	return retMat;
 }
 
+/* 行列の掛け算(外積とは違う) */
+std::array<float, 16> MatVec::multMatrixf(const std::array<float, 16> &a, const std::array<float, 16> &m) {
+    std::array<float, 16> retmat = a;
+
+#define A(row, col) a[(col << 2) + row]
+#define M(row, col) m[(col << 2) + row]
+#define MAT(row, col) retmat[(col << 2) + row]
+
+    for (int i = 0; i < 4; i++) {
+        MAT(i, 0) = A(i, 0) * M(0, 0) + A(i, 1) * M(1, 0) + A(i, 2) * M(2, 0) + A(i, 3) * M(3, 0);
+        MAT(i, 1) = A(i, 0) * M(0, 1) + A(i, 1) * M(1, 1) + A(i, 2) * M(2, 1) + A(i, 3) * M(3, 1);
+        MAT(i, 2) = A(i, 0) * M(0, 2) + A(i, 1) * M(1, 2) + A(i, 2) * M(2, 2) + A(i, 3) * M(3, 2);
+        MAT(i, 3) = A(i, 0) * M(0, 3) + A(i, 1) * M(1, 3) + A(i, 2) * M(2, 3) + A(i, 3) * M(3, 3);
+    }
+
+#undef A
+#undef M
+#undef MAT
+    return retmat;
+}
+
 /*******************/
 /*   setLookAtf	*/
 /*******************/
 std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz) {
-	std::array<float, 16> retmat = Matrix4f::IDENTITY;
+	std::array<float, 16> retmat = MatVec::IDENTITY;
 	std::array<float, 3> view = {}, up = {}, side = {};
 	std::array<float, 16> m = {};
 
