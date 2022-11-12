@@ -457,7 +457,7 @@ public:
 	static std::array<float, 16> getPerspectivef(float fovy, float aspect, float zNear, float zFar);
 	static std::array<float, 16> getLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz);
 	static std::array<float, 16> getRotatef(float angle, float x, float y, float z);
-	static void Translatef(std::array<float, 16> &retmat, float x, float y, float z);
+	static std::array<float, 16> Translatef(const std::array<float, 16> &mat, float x, float y, float z);
 	static void Rotatef(std::array<float, 16> &retmat, float angle, float x, float y, float z);
 	static void Scalef(std::array<float, 16> &retmat, float x, float y, float z);
 	static bool invertf(std::array<float, 16> &retmat, const std::array<float, 16> &matrix);

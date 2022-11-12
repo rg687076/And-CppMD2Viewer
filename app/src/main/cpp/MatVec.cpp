@@ -1318,18 +1318,21 @@ std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, flo
 #undef M
 
 	MatVec::MultMatrixf(retmat, m);
-	MatVec::Translatef(retmat, -eyex, -eyey, -eyez);
+	retmat = MatVec::Translatef(retmat, -eyex, -eyey, -eyez);
+
 	return retmat;
 }
 
 /******************/
 /* 移動行列を設定 */
 /******************/
-void MatVec::Translatef(std::array<float, 16> &retmat, float x, float y, float z) {
-	retmat[12] = retmat[0] * x + retmat[4] * y + retmat[ 8] * z + retmat[12];
-	retmat[13] = retmat[1] * x + retmat[5] * y + retmat[ 9] * z + retmat[13];
-	retmat[14] = retmat[2] * x + retmat[6] * y + retmat[10] * z + retmat[14];
-	retmat[15] = retmat[3] * x + retmat[7] * y + retmat[11] * z + retmat[15];
+ std::array<float, 16> MatVec::Translatef(const std::array<float, 16> &mat, float x, float y, float z) {
+	 std::array<float, 16> retmat = mat;
+	 retmat[12] = mat[0] * x + mat[4] * y + mat[ 8] * z + mat[12];
+	 retmat[13] = mat[1] * x + mat[5] * y + mat[ 9] * z + mat[13];
+	 retmat[14] = mat[2] * x + mat[6] * y + mat[10] * z + mat[14];
+	 retmat[15] = mat[3] * x + mat[7] * y + mat[11] * z + mat[15];
+	 return retmat;
 }
 
 /******************/
