@@ -246,3 +246,57 @@ void GlObj::setViewport(int x, int y, int width, int height) {
     glViewport(x, y, width, height);
 }
 
+void GlObj::clear(GLbitfield mask) {
+    glClear(mask);
+}
+
+void GlObj::activeTexture(GLenum texture) {
+    glActiveTexture(texture);
+}
+
+void GlObj::bindTexture(GLenum target, GLuint textureid) {
+    glBindTexture(target, textureid);
+}
+
+void GlObj::deleteTextures(GLsizei size, const GLuint *textures) {
+    glDeleteTextures(size, textures);
+}
+
+void GlObj::useProgram(GLuint programId) {
+    glUseProgram(programId);
+}
+
+void GlObj::deleteProgram(GLuint progid) {
+    glDeleteProgram(progid);
+}
+
+GLint GlObj::getUniformId(GLuint programId, const GLchar *name) {
+    auto itr = mUniformLocations.find(name);
+    if(itr == mUniformLocations.end()) {
+        mUniformLocations[name] = glGetUniformLocation(programId, name);
+    }
+    GLint uniformid = mUniformLocations[name];
+    return uniformid;
+}
+
+void GlObj::setUniform(GLuint programId, const GLchar *name, const std::array<float, 16> &mat44) {
+    GLint uniformid = GlObj::getUniformId(programId, name);
+    glUniformMatrix4fv(uniformid, 1, GL_FALSE, &(mat44[0]));
+}
+
+void GlObj::setUniform(GLuint programId, const GLchar *name, GLfloat valf) {
+    GLint uniformid = GlObj::getUniformId(programId, name);
+    glUniform1f(uniformid, valf);
+}
+
+void GlObj::bindBuffer(GLenum target, GLuint buffer) {
+    glBindBuffer(target, buffer);
+}
+
+void GlObj::vertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer) {
+    glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+}
+
+void GlObj::drawArrays(GLenum mode, GLint first, GLsizei count) {
+    glDrawArrays(mode, first, count);
+}

@@ -232,15 +232,20 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jc
     float elapsedtimeMs = (float)std::chrono::duration_cast<std::chrono::microseconds>(stime-gPreStartTime).count() / 1000.0f;
     gPreStartTime = stime;
 
+    /* glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+    GlObj::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    /* glEnable(GL_DEPTH_TEST); */
+    GlObj::enable(GL_DEPTH_TEST);
+
     /* MQOモデル描画 */
 	CG3DViewer::draw();
 
-//    /* Md2モデル描画 */
-//    bool ret = CgViewer::DrawModel(elapsedtimeMs);
-//    if(!ret) {
-//        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::drawModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
-//        return;
-//    }
+    /* Md2モデル描画 */
+    bool ret = CgViewer::DrawModel(elapsedtimeMs);
+    if(!ret) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::drawModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+        return;
+    }
 
     return;
 }

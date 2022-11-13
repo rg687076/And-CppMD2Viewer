@@ -245,8 +245,6 @@ bool GLES2::BufferInit(GlBufferObj &aVertex) {
 }
 
 void GLES2::draw() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     GlRenderData &SystemData = GlRenderData::GetIns();
 
     std::vector<DrawInfo> &DrawInfos = SystemData.mDrawInfos;

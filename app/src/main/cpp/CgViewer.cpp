@@ -4,10 +4,11 @@
 #include <android/log.h>
 #include "Md2Model.h"
 #include "CgViewer.h"
+#include "GlObj.h"
 #include "GlobalSpacePrm.h"
 
-static std::map<std::string, Md2Model> gMd2Models;  /* Md2モデルデータ実体 */
-static GlobalSpacePrm                  gGsPrm;      /* グローバル空間パラメータ */
+static std::map<std::string, Md2Model> gMd2Models; /* Md2モデルデータ実体 */
+static GlobalSpacePrm                  gGsPrm;     /* グローバル空間パラメータ */
 
 /* Md2モデル読込み(model読込,tex読込) */
 bool CgViewer::LoadModel(std::map<std::string, TmpBinData1> &tmpbindata1) {
@@ -51,11 +52,19 @@ bool CgViewer::InitModel(const std::map<std::string, TmpBinData3> &tmpbindata3s)
     return true;
 }
 
-/* 描画エリアの設定 */
+/* 描画エリア設定 */
 void CgViewer::setViewerArea(int width, int height) {
     gGsPrm.mProjectionMat = MatVec::getPerspectivef(30.0, ((float)width)/((float)height), 1.0, 5000.0);
     gGsPrm.mViewMat       = MatVec::getLookAtf(0.0f, 250.0f, 1000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     gGsPrm.mVpMat         = MatVec::multMatrixf(gGsPrm.mProjectionMat, gGsPrm.mViewMat);
     return;
+}
+
+/* Md2モデル描画 */
+bool CgViewer::DrawModel(float elapsedtimeMs) {
+//    for(auto &[key, value] : gMd2Models) {
+//        value.drawModel(gGsPrm.mNormalMat, elapsedtimeMs);
+//    }
+    return true;
 }
 
