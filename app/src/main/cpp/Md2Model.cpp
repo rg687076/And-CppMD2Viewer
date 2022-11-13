@@ -178,7 +178,9 @@ bool Md2Model::drawModel(const std::array<float, 16> &normalmat, float elapsedti
 }
 
 void Md2Model::setInitPosition(const std::array<float,3> &scale, const std::array<float,3> &rot, const std::array<float,3> &translate) {
-    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "初期位置 scale(%f,%f,%f) rot(%f,%f,%f) translate(%f,%f,%f) %s %s(%d)", scale[0],scale[1],scale[2], rot[0],rot[1],rot[2], translate[0],translate[1],translate[2], __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    mInitScaleMat    = MatVec::getScalef(scale);
+//  mInitRotateMat   = MatVec::getRotatef(rot); /* 回転は面倒なので実装しない */
+    mInitTranslateMat= MatVec::getTranslatef(rot);
     return;
 }
 

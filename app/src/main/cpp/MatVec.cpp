@@ -1274,12 +1274,22 @@ std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, flo
 	return retmat;
 }
 
+/* 移動行列生成 */
+std::array<float, 16> MatVec::getTranslatef(const std::array<float, 3> &vec) {
+	std::array<float, 16> retmat = MatVec::IDENTITY;
+	retmat[12] = vec[0];
+	retmat[13] = vec[1];
+	retmat[14] = vec[2];
+	retmat[15] = 1;
+	return retmat;
+}
+
+/* 回転行列生成 */
+std::array<float, 16> MatVec::getRotatef(float angle, const std::array<float, 3> &vec) {
+	return MatVec::getRotatef(angle, vec[0], vec[1], vec[2]);
+}
+
 /* 回転行列を設定 */
-/* @param rm returns the result */
-/* @param a angle to rotate in degrees */
-/* @param x X axis component */
-/* @param y Y axis component */
-/* @param z Z axis component */
 std::array<float, 16> MatVec::getRotatef(float angle, float x, float y, float z) {
 	std::array<float, 16> rm = {};
 	angle *= (float) (PI / 180.0f);
@@ -1325,6 +1335,15 @@ std::array<float, 16> MatVec::getRotatef(float angle, float x, float y, float z)
 	}
 
 	return rm;
+}
+
+/* 回転行列生成 */
+std::array<float, 16> MatVec::getScalef(const std::array<float, 3> &vec) {
+	std::array<float, 16> retmat = MatVec::IDENTITY;
+	retmat[0 * 4 + 0] = vec[0];
+	retmat[1 * 4 + 1] = vec[1];
+	retmat[2 * 4 + 2] = vec[2];
+	return retmat;
 }
 
 /* 行列の掛け算(外積とは違う) */

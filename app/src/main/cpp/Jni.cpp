@@ -203,7 +203,7 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
 
     /* 初期化 */
 //    bool ret = CgViewer::LoadModel(tmpbindata1s);
-    bool ret = CgViewer::LoadModel2(tmpbindata1s, initposison);
+    bool ret = CgViewer::LoadModel(tmpbindata1s, initposison);
     tmpbindata1s.clear();
     initposison.clear();
     if(!ret) {
