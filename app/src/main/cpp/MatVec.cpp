@@ -1222,27 +1222,6 @@ std::array<float, 16> MatVec::getPerspectivef(float fovy, float aspect, float ne
 	return retMat;
 }
 
-/* 行列の掛け算(外積とは違う) */
-std::array<float, 16> MatVec::multMatrixf(const std::array<float, 16> &a, const std::array<float, 16> &m) {
-    std::array<float, 16> retmat = a;
-
-#define A(row, col) a[(col << 2) + row]
-#define M(row, col) m[(col << 2) + row]
-#define MAT(row, col) retmat[(col << 2) + row]
-
-    for (int i = 0; i < 4; i++) {
-        MAT(i, 0) = A(i, 0) * M(0, 0) + A(i, 1) * M(1, 0) + A(i, 2) * M(2, 0) + A(i, 3) * M(3, 0);
-        MAT(i, 1) = A(i, 0) * M(0, 1) + A(i, 1) * M(1, 1) + A(i, 2) * M(2, 1) + A(i, 3) * M(3, 1);
-        MAT(i, 2) = A(i, 0) * M(0, 2) + A(i, 1) * M(1, 2) + A(i, 2) * M(2, 2) + A(i, 3) * M(3, 2);
-        MAT(i, 3) = A(i, 0) * M(0, 3) + A(i, 1) * M(1, 3) + A(i, 2) * M(2, 3) + A(i, 3) * M(3, 3);
-    }
-
-#undef A
-#undef M
-#undef MAT
-    return retmat;
-}
-
 /* setLookAtf */
 std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz) {
 	std::array<float, 16> retmat = MatVec::IDENTITY;
@@ -1295,39 +1274,12 @@ std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, flo
 	return retmat;
 }
 
-/******************/
-/* 移動行列を設定 */
-/******************/
- std::array<float, 16> MatVec::translatef(const std::array<float, 16> &mat, float x, float y, float z) {
-	 std::array<float, 16> retmat = mat;
-	 retmat[12] = mat[0] * x + mat[4] * y + mat[ 8] * z + mat[12];
-	 retmat[13] = mat[1] * x + mat[5] * y + mat[ 9] * z + mat[13];
-	 retmat[14] = mat[2] * x + mat[6] * y + mat[10] * z + mat[14];
-	 retmat[15] = mat[3] * x + mat[7] * y + mat[11] * z + mat[15];
-	 return retmat;
-}
-
-/******************/
-/* 回転行列を加算 */
-/* @param rm returns the result */
-/* @param a angle to rotate in degrees */
-/* @param x X axis component */
-/* @param y Y axis component */
-/* @param z Z axis component */
-/******************/
-std::array<float, 16> MatVec::rotatef(const std::array<float, 16> &mat, float angle, float x, float y, float z) {
-	std::array<float, 16> rotm = MatVec::getRotatef(angle, x, y, z);
-	return MatVec::multMatrixf(mat, rotm);
-}
-
-/******************/
 /* 回転行列を設定 */
 /* @param rm returns the result */
 /* @param a angle to rotate in degrees */
 /* @param x X axis component */
 /* @param y Y axis component */
 /* @param z Z axis component */
-/******************/
 std::array<float, 16> MatVec::getRotatef(float angle, float x, float y, float z) {
 	std::array<float, 16> rm = {};
 	angle *= (float) (PI / 180.0f);
@@ -1375,6 +1327,49 @@ std::array<float, 16> MatVec::getRotatef(float angle, float x, float y, float z)
 	return rm;
 }
 
+/* 行列の掛け算(外積とは違う) */
+std::array<float, 16> MatVec::multMatrixf(const std::array<float, 16> &a, const std::array<float, 16> &m) {
+	std::array<float, 16> retmat = a;
+
+#define A(row, col) a[(col << 2) + row]
+#define M(row, col) m[(col << 2) + row]
+#define MAT(row, col) retmat[(col << 2) + row]
+
+	for (int i = 0; i < 4; i++) {
+		MAT(i, 0) = A(i, 0) * M(0, 0) + A(i, 1) * M(1, 0) + A(i, 2) * M(2, 0) + A(i, 3) * M(3, 0);
+		MAT(i, 1) = A(i, 0) * M(0, 1) + A(i, 1) * M(1, 1) + A(i, 2) * M(2, 1) + A(i, 3) * M(3, 1);
+		MAT(i, 2) = A(i, 0) * M(0, 2) + A(i, 1) * M(1, 2) + A(i, 2) * M(2, 2) + A(i, 3) * M(3, 2);
+		MAT(i, 3) = A(i, 0) * M(0, 3) + A(i, 1) * M(1, 3) + A(i, 2) * M(2, 3) + A(i, 3) * M(3, 3);
+	}
+
+#undef A
+#undef M
+#undef MAT
+    return retmat;
+}
+
+/* 移動行列を加算 */
+ std::array<float, 16> MatVec::translatef(const std::array<float, 16> &mat, float x, float y, float z) {
+	std::array<float, 16> retmat = mat;
+	retmat[12] = mat[0] * x + mat[4] * y + mat[ 8] * z + mat[12];
+	retmat[13] = mat[1] * x + mat[5] * y + mat[ 9] * z + mat[13];
+	retmat[14] = mat[2] * x + mat[6] * y + mat[10] * z + mat[14];
+	retmat[15] = mat[3] * x + mat[7] * y + mat[11] * z + mat[15];
+    return retmat;
+}
+
+/* 回転行列を加算 */
+/* @param rm returns the result */
+/* @param a angle to rotate in degrees */
+/* @param x X axis component */
+/* @param y Y axis component */
+/* @param z Z axis component */
+std::array<float, 16> MatVec::rotatef(const std::array<float, 16> &mat, float angle, float x, float y, float z) {
+	std::array<float, 16> rotm = MatVec::getRotatef(angle, x, y, z);
+	return MatVec::multMatrixf(mat, rotm);
+}
+
+/* 拡縮行列を加算 */
 std::array<float, 16> MatVec::scalef(const std::array<float, 16> &mat, float x, float y, float z) {
 	std::array<float, 16> retmat = mat;
 	for (int i=0 ; i<4 ; i++) {

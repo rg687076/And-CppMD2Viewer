@@ -6,6 +6,7 @@
 #include "Md2Model.h"
 #include "TexObj.h"
 #include "GlObj.h"
+#include "MatVec.h"
 
 std::map<std::string, TmpBinData2> gTmpRgbDatas;   /* 読込み用の一時置き場 */
 
@@ -135,3 +136,103 @@ bool Md2Model::initShaders(const std::string &key, const TmpBinData3 &tmpbindata
     return true;
 }
 
+bool Md2Model::drawModel(const std::array<float, 16> &normalmat, float elapsedtimeMs) {
+    /* glActiveTexture() → glBindTexture() */
+    GlObj::activeTexture(GL_TEXTURE0);
+    GlObj::bindTexture(GL_TEXTURE_2D, mTexId);
+
+    /* glUseProgram() */
+    GlObj::useProgram(mProgramId);
+
+    /* glUniformXxxxx() */
+    GlObj::setUniform(mProgramId, "mvpmat",      mMvpMat);
+    GlObj::setUniform(mProgramId, "interpolate", minterpolate);
+
+    /* glBindBuffer(有効化) */
+    GlObj::bindBuffer(GL_ARRAY_BUFFER, mVboId);
+
+    /* glVertexAttribPointer()×3(現在頂点s,次頂点s,UV座標) */
+    GlObj::vertexAttribPointer(mCurPosAttrib  , 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(0));
+    GlObj::vertexAttribPointer(mNextPosAttrib , 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+    GlObj::vertexAttribPointer(mTexCoordAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid *)(6 * sizeof(GLfloat)));
+
+    /* glDrawArrays() */
+    int sidx = mFrameIndices[mCurrentFrame].first;
+    int size = mFrameIndices[mCurrentFrame].second - mFrameIndices[mCurrentFrame].first + 1;
+    GlObj::drawArrays(GL_TRIANGLES, sidx, size);
+
+    /* glBindBuffer(無効化) */
+    GlObj::bindBuffer(GL_ARRAY_BUFFER, NULL);
+
+    /* 補完係数の計算 */
+    if(minterpolate >= 1.0f) {
+        minterpolate = 0.0f;
+        if(mCurrentFrame >= (mFrameIndices.size()-1))
+            mCurrentFrame = 0;
+        else
+            mCurrentFrame++;
+    }
+    minterpolate += 0.1f;
+
+    return true;
+}
+
+void Md2Model::setVpMat(const std::array<float, 16> &vpmat) {
+	/* ビュー投影行列更新 */
+	mExpiringVpMat = vpmat;
+	/* モデルビュー投影行列更新 */
+	mMvpMat = MatVec::multMatrixf(vpmat, mModelMat);
+	return;
+}
+
+void Md2Model::setRotate(float rotatex, float rotatey) {
+    /* 回転設定 */
+    mRotatex = rotatex;
+    mRotatey = rotatey;
+
+    /* モデル行列 再算出 */
+    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
+    modelmat = MatVec::rotatef(modelmat, mRotatey, 0.0f, 1.0f, 0.0f);
+    modelmat = MatVec::translatef(modelmat, 0.0f, -150.0f, 0.0f);
+    modelmat = MatVec::translatef(modelmat, mPosition[0], mPosition[1], mPosition[2]);
+    modelmat = MatVec::scalef(modelmat, mScale, mScale, mScale);
+    mModelMat = modelmat;
+
+    /* モデルビュー投影行列更新 */
+    mMvpMat = MatVec::multMatrixf(mExpiringVpMat, mModelMat);
+    return;
+}
+
+void Md2Model::setScale(float scale) {
+    /* 拡縮設定 */
+    mScale = scale;
+
+    /* モデル行列更新 */
+    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
+    modelmat = MatVec::rotatef(modelmat, mRotatey, 0.0f, 1.0f, 0.0f);
+    modelmat = MatVec::translatef(modelmat, 0.0f, -150.0f, 0.0f);
+    modelmat = MatVec::translatef(modelmat, mPosition[0], mPosition[1], mPosition[2]);
+    modelmat = MatVec::scalef(modelmat, mScale, mScale, mScale);
+    mModelMat = modelmat;
+
+    /* モデルビュー投影行列更新 */
+    mMvpMat = MatVec::multMatrixf(mExpiringVpMat, mModelMat);
+    return;
+}
+
+void Md2Model::setPosition(float x, float y, float z) {
+    mPosition = {x, y, z};
+
+    /* モデル行列更新 */
+    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
+    modelmat = MatVec::rotatef(modelmat, mRotatey, 0.0f, 1.0f, 0.0f);
+    modelmat = MatVec::translatef(modelmat, 0.0f, -150.0f, 0.0f);
+    modelmat = MatVec::translatef(modelmat, mPosition[0], mPosition[1], mPosition[2]);
+    modelmat = MatVec::scalef(modelmat, mScale, mScale, mScale);
+    mModelMat = modelmat;
+
+    /* モデル/ビュー/投影行列更新 */
+    mMvpMat = MatVec::multMatrixf(mExpiringVpMat, mModelMat);
+
+    return;
+}

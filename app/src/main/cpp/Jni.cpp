@@ -218,7 +218,7 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *en
 
     CG3DViewer::setDrawArea(width, height);
 
-    CgViewer::setViewerArea(width, height);
+    CgViewer::SetViewerArea(width, height);
 
     return;
 }
@@ -252,12 +252,14 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jc
 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setTouchAngle(JNIEnv *env, jclass clazz, jfloat aTouchAngleX, jfloat aTouchAngleY) {
 	CG3DViewer::setTouchAngle(aTouchAngleX, aTouchAngleY);
+    CgViewer::SetRotate(aTouchAngleX, aTouchAngleY);
 	return;
 }
 
 /* モデルデータ拡縮設定 */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setScale(JNIEnv *env, jclass clazz, jfloat scale) {
 	CG3DViewer::setScale(scale);
+    CgViewer::SetScale(scale);
 	return;
 }
 

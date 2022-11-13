@@ -53,18 +53,45 @@ bool CgViewer::InitModel(const std::map<std::string, TmpBinData3> &tmpbindata3s)
 }
 
 /* 描画エリア設定 */
-void CgViewer::setViewerArea(int width, int height) {
+void CgViewer::SetViewerArea(int width, int height) {
     gGsPrm.mProjectionMat = MatVec::getPerspectivef(30.0, ((float)width)/((float)height), 1.0, 5000.0);
     gGsPrm.mViewMat       = MatVec::getLookAtf(0.0f, 250.0f, 1000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    gGsPrm.mVpMat         = MatVec::multMatrixf(gGsPrm.mProjectionMat, gGsPrm.mViewMat);
+    std::array<float, 16> vmmat = MatVec::multMatrixf(gGsPrm.mProjectionMat, gGsPrm.mViewMat);
+    /* View投影行列の変更を通知 */
+    CgViewer::SetVpMat(vmmat);
     return;
 }
 
 /* Md2モデル描画 */
 bool CgViewer::DrawModel(float elapsedtimeMs) {
-//    for(auto &[key, value] : gMd2Models) {
-//        value.drawModel(gGsPrm.mNormalMat, elapsedtimeMs);
-//    }
+    for(auto &[key, value] : gMd2Models) {
+        value.drawModel(gGsPrm.mNormalMat, elapsedtimeMs);
+    }
     return true;
 }
 
+void CgViewer::SetVpMat(const std::array<float, 16> &vpmat) {
+    for(auto &[key, value] : gMd2Models) {
+        value.setVpMat(vpmat);
+    }
+    return;
+}
+
+void CgViewer::SetRotate(float rotatex, float rotatey) {
+    for(auto &[key, value] : gMd2Models) {
+        value.setRotate(rotatex, rotatey);
+    }
+    return;
+}
+
+void CgViewer::SetScale(float scale) {
+    for(auto &[key, value] : gMd2Models) {
+        value.setScale(scale);
+    }
+    return;
+}
+
+void CgViewer::SetPosition(const std::string &key, const std::array<float, 3> &pos) {
+    gMd2Models.at(key).setPosition(pos[0], pos[1], pos[2]);
+    return;
+}
