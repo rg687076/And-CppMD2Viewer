@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         glview.setRenderer(new GLSurfaceView.Renderer() {
             @Override
             public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
-                /* ***************** TODO 削除予定 ここから */
                 /* Asset配下のファイル一覧を取得 */
                 AtomicReference<List<String>> atomfilelist = new AtomicReference<List<String>>();
                 atomfilelist.set(new ArrayList<String>());
@@ -80,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
                 boolean ret = Jni.init(MainActivity.this.getAssets(), atomfilelist.get().toArray(new String[atomfilelist.get().size()]));
                 if(!ret) throw new RuntimeException("CG3DViewer.init()で失敗");
-                /* ***************** 削除予定 ここまで */
+
                 boolean ret1 = Jni.onSurfaceCreated();
                 if(!ret1) throw new RuntimeException("Jni.init()で失敗");
             }
@@ -189,12 +188,22 @@ public class MainActivity extends AppCompatActivity {
             JSONArray jsonarray = jsonObject.getJSONArray("md2models");
             for(int lpct = 0; lpct < jsonarray.length(); lpct++) {
                 JSONObject md2model = jsonarray.getJSONObject(lpct);
+                JSONArray tmpsclobj  = md2model.getJSONArray("scale");
+                float[] tmpscl  = {(float)tmpsclobj.getDouble(0), (float)tmpsclobj.getDouble(1), (float)tmpsclobj.getDouble(2)};
+                JSONArray tmprotobj  = md2model.getJSONArray("rotate");
+                float[] tmprot  = {(float)tmprotobj.getDouble(0), (float)tmprotobj.getDouble(1), (float)tmprotobj.getDouble(2)};
+                JSONArray tmptraobj  = md2model.getJSONArray("translate");
+                float[] tmprta  = {(float)tmptraobj.getDouble(0), (float)tmptraobj.getDouble(1), (float)tmptraobj.getDouble(2)};
                 ModelIndex mi = new ModelIndex() {{
                     modelname=md2model.getString("name");
                     md2filename=md2model.getString("ver");
                     texfilename=md2model.getString("tex");
                     vshfilename=md2model.getString("vsh");
-                    fshfilename=md2model.getString("fsh");}};
+                    fshfilename=md2model.getString("fsh");
+                    scale    =tmpscl;
+                    rotate   =tmprot;
+                    translate=tmprta;
+                }};
                 mDrwModelNames.add(mi.modelname);
                 md2modelindex.put(md2model.getString("name"), mi);
             }
@@ -215,6 +224,15 @@ public class MainActivity extends AppCompatActivity {
         String[] texfilenames = new String[md2modelindex.size()];
         String[] vshfilenames = new String[md2modelindex.size()];
         String[] fshfilenames = new String[md2modelindex.size()];
+        float[] scalex = new float[md2modelindex.size()];
+        float[] scaley = new float[md2modelindex.size()];
+        float[] scalez = new float[md2modelindex.size()];
+        float[] rotx = new float[md2modelindex.size()];
+        float[] roty = new float[md2modelindex.size()];
+        float[] rotz = new float[md2modelindex.size()];
+        float[] transx = new float[md2modelindex.size()];
+        float[] transy = new float[md2modelindex.size()];
+        float[] transz = new float[md2modelindex.size()];
         int lpct = 0;
         for(Map.Entry<String, ModelIndex> item : md2modelindex.entrySet()) {
             modelnames  [lpct] = item.getKey();
@@ -222,9 +240,19 @@ public class MainActivity extends AppCompatActivity {
             texfilenames[lpct] = item.getValue().texfilename;
             vshfilenames[lpct] = item.getValue().vshfilename;
             fshfilenames[lpct] = item.getValue().fshfilename;
+            scalex[lpct] = item.getValue().scale[0];
+            scaley[lpct] = item.getValue().scale[1];
+            scalez[lpct] = item.getValue().scale[2];
+            rotx[lpct]   = item.getValue().rotate[0];
+            roty[lpct]   = item.getValue().rotate[1];
+            rotz[lpct]   = item.getValue().rotate[2];
+            transx[lpct] = item.getValue().translate[0];
+            transy[lpct] = item.getValue().translate[1];
+            transz[lpct] = item.getValue().translate[2];
             lpct++;
         }
-        Jni.onStart(getResources().getAssets(), modelnames, md2filenames, texfilenames, vshfilenames, fshfilenames);
+        Jni.onStart(getResources().getAssets(), modelnames, md2filenames, texfilenames, vshfilenames, fshfilenames,
+                scalex, scaley, scalez, rotx, roty, rotz, transx, transy, transz);
     }
 
     @Override
@@ -239,4 +267,7 @@ class ModelIndex {
     public String texfilename;
     public String vshfilename;
     public String fshfilename;
+    public float[] scale;
+    public float[] rotate;
+    public float[] translate;
 }

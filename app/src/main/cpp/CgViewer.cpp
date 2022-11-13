@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <tuple>
 #include <android/log.h>
 #include "Md2Model.h"
 #include "CgViewer.h"
@@ -27,6 +28,35 @@ bool CgViewer::LoadModel(std::map<std::string, TmpBinData1> &tmpbindata1) {
         bool ret2 = md2Model.loadTexture(key, bindata.mWkTexBinData);
         std::vector<char>().swap(bindata.mWkTexBinData);
         if( !ret2) return false;
+
+        /* Md2モデルデータ追加 */
+        gMd2Models.emplace(key, md2Model);
+
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model and Texture LOADED(%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    }
+
+    return true;
+}
+
+bool CgViewer::LoadModel2(std::map<std::string, TmpBinData1> &tmpbindata1, const std::map<std::string, std::tuple<float, float, float, float, float, float, float, float, float>> &initPosition) {
+    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+    gMd2Models.clear();
+
+    for(auto &[key, bindata] : tmpbindata1) {
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Model load start (%s). %s %s(%d)", key.c_str(), __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+        Md2Model md2Model;
+        /* MD2モデルLoad */
+        bool ret = md2Model.loadModel(key, bindata.mWkMd2BinData);
+        std::vector<char>().swap(bindata.mWkMd2BinData);
+        if( !ret) return false;
+        /* テクスチャLoad */
+        bool ret2 = md2Model.loadTexture(key, bindata.mWkTexBinData);
+        std::vector<char>().swap(bindata.mWkTexBinData);
+        if( !ret2) return false;
+
+        auto ip = initPosition.at(key);
+        md2Model.setInitPosition({std::get<0>(ip),std::get<1>(ip),std::get<2>(ip)}, {std::get<3>(ip),std::get<4>(ip),std::get<5>(ip)}, {std::get<6>(ip),std::get<7>(ip),std::get<8>(ip)});
 
         /* Md2モデルデータ追加 */
         gMd2Models.emplace(key, md2Model);

@@ -62,6 +62,7 @@ public:
     bool initTexture(const std::string &key);                                      /* TextureデータをOpenGLで使えるようにする */
     bool initShaders(const std::string &key, const TmpBinData3 &tmpbindata3);      /* シェーダをOpenGLで使えるようにする */
     bool drawModel(const std::array<float, 16> &normalmat, float elapsedtimeMs);
+    void setInitPosition(const std::array<float,3> &scale, const std::array<float,3> &rot, const std::array<float,3> &translate);
     void setPosition(float x, float y, float z);
     void setRotate(float rotatex, float rotatey);
     void setScale(float scale);

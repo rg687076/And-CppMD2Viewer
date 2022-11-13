@@ -8,6 +8,7 @@
 class CgViewer {
 public:
     static bool LoadModel(std::map<std::string, TmpBinData1> &tmpbindata1);
+    static bool LoadModel2(std::map<std::string, TmpBinData1> &tmpbindata1, const std::map<std::string, std::tuple<float, float, float, float, float, float, float, float, float>> &initposidion);
     static bool InitModel(const std::map<std::string, TmpBinData3> &tmpbindata3s);
     static void SetViewerArea(int width, int height);
     static bool DrawModel(float elapsedtimeMs);

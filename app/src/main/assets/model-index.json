@@ -1,7 +1,7 @@
 {
 	"md2models": [
-		{ "name": "female", "ver": "female.md2", "tex": "female.tga", "fsh": "shaders/basic.fsh", "vsh": "shaders/basic.vsh"},
-		{ "name": "grunt" , "ver": "grunt.md2" , "tex": "grunt.tga" , "fsh": "shaders/basic.fsh", "vsh": "shaders/basic.vsh"}
+		{ "name": "female", "ver": "female.md2", "tex": "female.tga", "fsh": "shaders/basic.fsh", "vsh": "shaders/basic.vsh", "scale" : [1,1,1], "translate" : [0,0,0], "rotate" : [0,0,0]},
+		{ "name": "grunt" , "ver": "grunt.md2" , "tex": "grunt.tga" , "fsh": "shaders/basic.fsh", "vsh": "shaders/basic.vsh", "scale" : [1,1,1], "translate" : [0,0,0], "rotate" : [0,0,0]}
 	],
 	"//": [
 		{ "name": "frog" , "ver": "obj1.md2", "tex": "obj1.tga"},

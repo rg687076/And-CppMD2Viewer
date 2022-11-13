@@ -84,13 +84,17 @@ static std::tuple<bool, std::map<std::string, std::vector<char>>> LoadAssets(JNI
 JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jclass clazz, jobject assets,
                                                                  jobjectArray modelnames,
                                                                  jobjectArray md2filenames, jobjectArray texfilenames,
-                                                                 jobjectArray vshfilenames, jobjectArray fshfilenames) {
+                                                                 jobjectArray vshfilenames, jobjectArray fshfilenames,
+                                                                 jfloatArray scalexs, jfloatArray scaleys, jfloatArray scalezs,
+                                                                 jfloatArray rotxs  , jfloatArray rotys  , jfloatArray rotzs,
+                                                                 jfloatArray transxs, jfloatArray transys, jfloatArray transzs) {
     __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
     gMutex.lock();
 
     /* 引数チェック(md2model) */
     jsize size0 = env->GetArrayLength(modelnames), size1 = env->GetArrayLength(md2filenames), size2 = env->GetArrayLength(texfilenames), size3 = env->GetArrayLength(vshfilenames), size4 = env->GetArrayLength(fshfilenames);
-    if(size0 != size1 || size0 != size2 || size0 != size3 || size0 != size4) {
+    jsize size5 = env->GetArrayLength(scalexs), size6 = env->GetArrayLength(scaleys), size7 = env->GetArrayLength(scalezs), size8 = env->GetArrayLength(rotxs), size9 = env->GetArrayLength(rotys), size10 = env->GetArrayLength(rotzs), size11 = env->GetArrayLength(transxs), size12 = env->GetArrayLength(transys), size13 = env->GetArrayLength(transzs);
+    if(size0 != size1 || size0 != size2 || size0 != size3 || size0 != size4 || size0 != size5 || size0 != size6 || size0 != size7 || size0 != size8 || size0 != size9 || size0 != size10 || size0 != size11 || size0 != size12 || size0 != size13) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "引数不正 名称リストの数が合わない!!! modelname.size=%d md2filenames.size=%d texfilenames.size=%d vshfilenames.size=%d fshfilenames.size=%d %s %s(%d)", size0, size1, size2, size3, size4, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
     }
@@ -103,6 +107,16 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
     }
 
     /* モデル名,頂点ファイル名,Texファイル名,頂点ファイル中身,Texファイル中身,vshファイルの中身,fshのファイルの中身 取得 */
+    jfloat *pscalex = env->GetFloatArrayElements(scalexs, nullptr);
+    jfloat *pscaley = env->GetFloatArrayElements(scaleys, nullptr);
+    jfloat *pscalez = env->GetFloatArrayElements(scalezs, nullptr);
+    jfloat *protx   = env->GetFloatArrayElements(rotxs, nullptr);
+    jfloat *proty   = env->GetFloatArrayElements(rotys, nullptr);
+    jfloat *protz   = env->GetFloatArrayElements(rotzs, nullptr);
+    jfloat *ptransx = env->GetFloatArrayElements(transxs, nullptr);
+    jfloat *ptransy = env->GetFloatArrayElements(transys, nullptr);
+    jfloat *ptransz = env->GetFloatArrayElements(transzs, nullptr);
+    std::map<std::string, std::tuple<float,float,float, float,float,float, float,float,float>> initposison = {};
     std::map<std::string, TmpBinData1> tmpbindata1s = {};
     for(int lpct = 0; lpct < size0; lpct++) {
         /* jobjectArray -> jstring */
@@ -111,6 +125,17 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         jstring texfilenamejstr = (jstring)env->GetObjectArrayElement(texfilenames, lpct);
         jstring vshfilenamejstr = (jstring)env->GetObjectArrayElement(vshfilenames, lpct);
         jstring fshfilenamejstr = (jstring)env->GetObjectArrayElement(fshfilenames, lpct);
+        float scalex    = pscalex[lpct];
+        float scaley    = pscaley[lpct];
+        float scalez    = pscalez[lpct];
+        float rotx      = protx[lpct];
+        float roty      = proty[lpct];
+        float rotz      = protz[lpct];
+        float translatex= ptransx[lpct];
+        float translatey= ptransy[lpct];
+        float translatez= ptransz[lpct];
+        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "初期位置[%d] scale(%f,%f,%f) rot(%f,%f,%f) translate(%f,%f,%f) %s %s(%d)", lpct,
+                            scalex,scaley,scalez, rotx,roty,rotz, translatex,translatey,translatez, __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
         /* jstring -> char */
         const char *modelnamechar   = env->GetStringUTFChars(modelnamejstr  , nullptr);
@@ -118,6 +143,9 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         const char *texfilenamechar = env->GetStringUTFChars(texfilenamejstr, nullptr);
         const char *vshfilenamechar = env->GetStringUTFChars(vshfilenamejstr, nullptr);
         const char *fshfilenamechar = env->GetStringUTFChars(fshfilenamejstr, nullptr);
+
+        /* md2初期位置データ設定 */
+        initposison.emplace(modelnamechar, std::tuple{scalex,scaley,scalez, rotx,roty,rotz, translatex,translatey,translatez});
 
         /* md2関連データ一括読込み */
         std::vector<std::pair<std::string, std::vector<char>>> wk = {{md2filenamechar, std::vector<char>()},
@@ -163,10 +191,21 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onStart(JNIEnv *env, jc
         env->DeleteLocalRef(vshfilenamejstr);
         env->DeleteLocalRef(fshfilenamejstr);
     }
+    env->ReleaseFloatArrayElements(scalexs, pscalex, 0);
+    env->ReleaseFloatArrayElements(scaleys, pscaley, 0);
+    env->ReleaseFloatArrayElements(scalezs, pscalez, 0);
+    env->ReleaseFloatArrayElements(rotxs  , protx  , 0);
+    env->ReleaseFloatArrayElements(rotys  , proty  , 0);
+    env->ReleaseFloatArrayElements(rotzs  , protz  , 0);
+    env->ReleaseFloatArrayElements(transxs, ptransx, 0);
+    env->ReleaseFloatArrayElements(transys, ptransy, 0);
+    env->ReleaseFloatArrayElements(transzs, ptransz, 0);
 
     /* 初期化 */
-    bool ret = CgViewer::LoadModel(tmpbindata1s);
+//    bool ret = CgViewer::LoadModel(tmpbindata1s);
+    bool ret = CgViewer::LoadModel2(tmpbindata1s, initposison);
     tmpbindata1s.clear();
+    initposison.clear();
     if(!ret) {
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::loadModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
         return false;
