@@ -9,6 +9,7 @@ class CgViewer {
 public:
     static bool LoadModel(std::map<std::string, TmpBinData1> &tmpbindata1);
     static bool InitModel(const std::map<std::string, TmpBinData3> &tmpbindata3s);
+    static void setViewerArea(int width, int height);
 };
 
 #endif //CPPMD2VIEWER_CGVIEWER_H

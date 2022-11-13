@@ -1243,9 +1243,7 @@ std::array<float, 16> MatVec::multMatrixf(const std::array<float, 16> &a, const 
     return retmat;
 }
 
-/*******************/
-/*   setLookAtf	*/
-/*******************/
+/* setLookAtf */
 std::array<float, 16> MatVec::getLookAtf(float eyex, float eyey, float eyez, float tarx, float tary, float tarz, float upx, float upy, float upz) {
 	std::array<float, 16> retmat = MatVec::IDENTITY;
 	std::array<float, 3> view = {}, up = {}, side = {};

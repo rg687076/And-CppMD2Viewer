@@ -18,8 +18,9 @@
 extern "C" {
 #endif
 
-static std::mutex                           gMutex;           /* onStart()完了待ちmutex */
-static std::map<std::string, TmpBinData3>   gTmpBinData3s;    /* Gl初期化用のTexデータ */
+static std::mutex                            gMutex;           /* onStart()完了待ちmutex */
+static std::chrono::system_clock::time_point gPreStartTime;    /* 前回開始時刻 */
+static std::map<std::string, TmpBinData3>    gTmpBinData3s;    /* Gl初期化用のTexデータ */
 
 /**************/
 /* CG3DViewer */
@@ -215,14 +216,33 @@ JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceChanged(JNIEnv *en
     /* setViewport() */
     GlObj::setViewport(0, 0, width, height);
 
-	CG3DViewer::setDrawArea(width, height);
-	return;
+    CG3DViewer::setDrawArea(width, height);
+
+    CgViewer::setViewerArea(width, height);
+
+    return;
 }
 
 /* onDrawFrame */
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_onDrawFrame(JNIEnv *env, jclass clazz) {
+//    __android_log_print(ANDROID_LOG_INFO, "aaaaa", "%s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+    /* 前回描画からの経過時間を算出 */
+    std::chrono::system_clock::time_point stime = std::chrono::system_clock::now();
+    float elapsedtimeMs = (float)std::chrono::duration_cast<std::chrono::microseconds>(stime-gPreStartTime).count() / 1000.0f;
+    gPreStartTime = stime;
+
+    /* MQOモデル描画 */
 	CG3DViewer::draw();
-	return;
+
+//    /* Md2モデル描画 */
+//    bool ret = CgViewer::DrawModel(elapsedtimeMs);
+//    if(!ret) {
+//        __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::drawModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+//        return;
+//    }
+
+    return;
 }
 
 JNIEXPORT void JNICALL Java_com_tks_cppmd2viewer_Jni_setTouchAngle(JNIEnv *env, jclass clazz, jfloat aTouchAngleX, jfloat aTouchAngleY) {
