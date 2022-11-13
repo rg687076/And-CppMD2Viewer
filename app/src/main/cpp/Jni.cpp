@@ -244,9 +244,6 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv
     if(!ret)
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
 
-    /* 初期位置設定 */
-    CgViewer::SetPosition("grunt", {100.0f, 0.0f, 0.0f});
-
     gMutex.unlock();
     return true;
 }

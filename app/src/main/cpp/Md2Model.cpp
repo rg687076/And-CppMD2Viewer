@@ -178,9 +178,9 @@ bool Md2Model::drawModel(const std::array<float, 16> &normalmat, float elapsedti
 }
 
 void Md2Model::setInitPosition(const std::array<float,3> &scale, const std::array<float,3> &rot, const std::array<float,3> &translate) {
-    mInitScaleMat    = MatVec::getScalef(scale);
-//  mInitRotateMat   = MatVec::getRotatef(rot); /* 回転は面倒なので実装しない */
-    mInitTranslateMat= MatVec::getTranslatef(rot);
+    mInitScaleVec  = scale;
+    mInitRotateVec = rot;
+    mInitTransVec  = translate;
     return;
 }
 
@@ -234,10 +234,11 @@ void Md2Model::setVpMat(const std::array<float, 16> &vpmat) {
 
 /* View行列を計算 */
 std::array<float,16> Md2Model::calcModelMat() {
-    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
-    modelmat = MatVec::rotatef(modelmat, mRotatey, 0.0f, 1.0f, 0.0f);
-    modelmat = MatVec::translatef(modelmat, 0.0f, -150.0f, 0.0f);
-    modelmat = MatVec::translatef(modelmat, mPosition[0], mPosition[1], mPosition[2]);
-    modelmat = MatVec::scalef(modelmat, mScale, mScale, mScale);
+    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex-mInitRotateVec[0], 1.0f, 0.0f, 0.0f);
+    modelmat = MatVec::rotatef(modelmat, mRotatey+mInitRotateVec[1], 0.0f, 1.0f, 0.0f);
+    modelmat = MatVec::rotatef(modelmat, mInitRotateVec[2], 0.0f, 0.0f, 1.0f);
+    modelmat = MatVec::translatef(modelmat, mPosition[0]+mInitTransVec[0], mPosition[1]+mInitTransVec[1], mPosition[2]+mInitTransVec[2]);
+    modelmat = MatVec::scalef(modelmat, mScale*mInitScaleVec[0], mScale*mInitScaleVec[1], mScale*mInitScaleVec[2]);
+
     return modelmat;
 }

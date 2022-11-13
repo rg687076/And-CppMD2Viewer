@@ -97,9 +97,9 @@ public:
 private:
     /* モデル行列更新 */
     std::array<float,16> calcModelMat();
-    std::array<float, 16> mInitScaleMat;
-//  std::array<float, 16> mInitRotateMat;   /* 回転は面倒なので実装しない */
-    std::array<float, 16> mInitTranslateMat;
+    std::array<float,3> mInitScaleVec;
+    std::array<float,3> mInitRotateVec;
+    std::array<float,3> mInitTransVec;
 };
 
 #endif //CPPMD2VIEWER_MD2MODEL_H
