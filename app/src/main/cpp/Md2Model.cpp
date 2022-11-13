@@ -186,12 +186,7 @@ void Md2Model::setPosition(float x, float y, float z) {
     mPosition = {x, y, z};
 
     /* モデル行列更新 */
-    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
-    modelmat = MatVec::rotatef(modelmat, mRotatey, 0.0f, 1.0f, 0.0f);
-    modelmat = MatVec::translatef(modelmat, 0.0f, -150.0f, 0.0f);
-    modelmat = MatVec::translatef(modelmat, mPosition[0], mPosition[1], mPosition[2]);
-    modelmat = MatVec::scalef(modelmat, mScale, mScale, mScale);
-    mModelMat = modelmat;
+    mModelMat = calcModelMat();
 
     /* モデル/ビュー/投影行列更新 */
     mMvpMat = MatVec::multMatrixf(mExpiringVpMat, mModelMat);
@@ -205,13 +200,8 @@ void Md2Model::setRotate(float rotatex, float rotatey) {
     mRotatex = rotatex;
     mRotatey = rotatey;
 
-    /* モデル行列 再算出 */
-    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
-    modelmat = MatVec::rotatef(modelmat, mRotatey, 0.0f, 1.0f, 0.0f);
-    modelmat = MatVec::translatef(modelmat, 0.0f, -150.0f, 0.0f);
-    modelmat = MatVec::translatef(modelmat, mPosition[0], mPosition[1], mPosition[2]);
-    modelmat = MatVec::scalef(modelmat, mScale, mScale, mScale);
-    mModelMat = modelmat;
+    /* モデル行列更新 */
+    mModelMat = calcModelMat();
 
     /* モデルビュー投影行列更新 */
     mMvpMat = MatVec::multMatrixf(mExpiringVpMat, mModelMat);
@@ -224,12 +214,7 @@ void Md2Model::setScale(float scale) {
     mScale = scale;
 
     /* モデル行列更新 */
-    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
-    modelmat = MatVec::rotatef(modelmat, mRotatey, 0.0f, 1.0f, 0.0f);
-    modelmat = MatVec::translatef(modelmat, 0.0f, -150.0f, 0.0f);
-    modelmat = MatVec::translatef(modelmat, mPosition[0], mPosition[1], mPosition[2]);
-    modelmat = MatVec::scalef(modelmat, mScale, mScale, mScale);
-    mModelMat = modelmat;
+    mModelMat = calcModelMat();
 
     /* モデルビュー投影行列更新 */
     mMvpMat = MatVec::multMatrixf(mExpiringVpMat, mModelMat);
@@ -243,4 +228,14 @@ void Md2Model::setVpMat(const std::array<float, 16> &vpmat) {
     /* モデルビュー投影行列更新 */
     mMvpMat = MatVec::multMatrixf(vpmat, mModelMat);
     return;
+}
+
+/* View行列を計算 */
+std::array<float,16> Md2Model::calcModelMat() {
+    std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex, 1.0f, 0.0f, 0.0f);
+    modelmat = MatVec::rotatef(modelmat, mRotatey, 0.0f, 1.0f, 0.0f);
+    modelmat = MatVec::translatef(modelmat, 0.0f, -150.0f, 0.0f);
+    modelmat = MatVec::translatef(modelmat, mPosition[0], mPosition[1], mPosition[2]);
+    modelmat = MatVec::scalef(modelmat, mScale, mScale, mScale);
+    return modelmat;
 }

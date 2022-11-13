@@ -93,6 +93,10 @@ public:
     std::array<float, 16> mModelMat      = MatVec::IDENTITY;
     std::array<float, 16> mExpiringVpMat = MatVec::IDENTITY;  /* 死にかけのView投影行列(随時、最新化されるのを期待する) */
     std::array<float, 16> mMvpMat        = MatVec::IDENTITY;  /* ModelView投影行列 */
+
+private:
+    /* モデル行列更新 */
+    std::array<float,16> calcModelMat();
 };
 
 #endif //CPPMD2VIEWER_MD2MODEL_H
