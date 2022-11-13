@@ -18,9 +18,9 @@
 extern "C" {
 #endif
 
-static std::mutex                            gMutex;           /* onStart()完了待ちmutex */
-static std::chrono::system_clock::time_point gPreStartTime;    /* 前回開始時刻 */
-static std::map<std::string, TmpBinData3>    gTmpBinData3s;    /* Gl初期化用のTexデータ */
+static std::mutex                            gMutex;        /* onStart()完了待ちmutex */
+static std::chrono::system_clock::time_point gPreStartTime; /* 前回開始時刻 */
+static std::map<std::string, TmpBinData3>    gTmpBinData3s; /* Gl初期化用のTexデータ */
 
 /**************/
 /* CG3DViewer */
@@ -186,8 +186,8 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv
 
     /* MQO */
     GlObj::enable(GL_DEPTH_TEST);
-    bool ret = CG3DViewer::init();
-    if( !ret) return false;
+    bool ret1 = CG3DViewer::init();
+    if( !ret1) return false;
     std::map<std::string, std::vector<char>> &AssetDatas = AppData::GetIns().mAssets;
     GlRenderData &RenderData = GlRenderData::GetIns();
     auto [ret0, MqoInfo] = MQO::init(AssetDatas.at("vignette_ppp.mqo"));
@@ -200,10 +200,13 @@ JNIEXPORT jboolean JNICALL Java_com_tks_cppmd2viewer_Jni_onSurfaceCreated(JNIEnv
 
     /* MD2 */
     /* GL系モデル初期化(GL系は、このタイミングでないとエラーになる) */
-    bool ret7 = CgViewer::InitModel(gTmpBinData3s);
+    bool ret = CgViewer::InitModel(gTmpBinData3s);
     gTmpBinData3s.clear();
-    if(!ret7)
+    if(!ret)
         __android_log_print(ANDROID_LOG_INFO, "aaaaa", "Md2Obj::InitModel()で失敗!! %s %s(%d)", __PRETTY_FUNCTION__, __FILE_NAME__, __LINE__);
+
+    /* 初期位置設定 */
+    CgViewer::SetPosition("grunt", {100.0f, 0.0f, 0.0f});
 
     gMutex.unlock();
     return true;
