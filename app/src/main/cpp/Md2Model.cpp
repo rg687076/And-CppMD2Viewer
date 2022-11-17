@@ -181,6 +181,12 @@ void Md2Model::setInitPosition(const std::array<float,3> &scale, const std::arra
     mInitScaleVec  = scale;
     mInitRotateVec = rot;
     mInitTransVec  = translate;
+
+    /* モデル行列更新 */
+    mModelMat = calcModelMat();
+    /* モデル/ビュー/投影行列更新 */
+    mMvpMat = MatVec::multMatrixf(mExpiringVpMat, mModelMat);
+
     return;
 }
 
@@ -235,7 +241,8 @@ void Md2Model::setVpMat(const std::array<float, 16> &vpmat) {
 /* View行列を計算 */
 std::array<float,16> Md2Model::calcModelMat() {
     std::array<float, 16> modelmat = MatVec::getRotatef(-mRotatex-mInitRotateVec[0], 1.0f, 0.0f, 0.0f);
-    modelmat = MatVec::rotatef(modelmat, mRotatey+mInitRotateVec[1], 0.0f, 1.0f, 0.0f);
+//    modelmat = MatVec::rotatef(modelmat, mRotatey+mInitRotateVec[1], 0.0f, 1.0f, 0.0f);
+    modelmat = MatVec::rotatef(modelmat, mRotatey+mInitRotateVec[1], 0.0f, 0.0f, 1.0f); /* xz平面だからz軸に対して回転を掛ける */
     modelmat = MatVec::rotatef(modelmat, mInitRotateVec[2], 0.0f, 0.0f, 1.0f);
     modelmat = MatVec::translatef(modelmat, mPosition[0]+mInitTransVec[0], mPosition[1]+mInitTransVec[1], mPosition[2]+mInitTransVec[2]);
     modelmat = MatVec::scalef(modelmat, mScale*mInitScaleVec[0], mScale*mInitScaleVec[1], mScale*mInitScaleVec[2]);
